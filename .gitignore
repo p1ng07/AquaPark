@@ -1,5 +1,4 @@
 build/
-*.o
 main
 simulador
 monitor
