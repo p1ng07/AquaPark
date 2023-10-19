@@ -1,5 +1,4 @@
 build/
 main
-simulador
-monitor
+bin/*
 obj/

@@ -19,10 +19,10 @@ OBJ_SIMUL := $(SIMUL_SRC:$(SIMUL_SRC_DIR)/../%.c=$(OBJ_DIR_SIMUL)/%.o)
 all: monitor simulador
 
 monitor: $(OBJ_MONIT) $(OBJ_COMMON)
-	cc -g $^ -o $@
+	cc -g $^ -o bin/$@
 
 simulador: $(OBJ_COMMON)  $(OBJ_SIMUL)
-	cc -g $^ -o $@
+	cc -g $^ -o bin/$@
 
 $(OBJ_DIR_COMMON)/%.o: $(COMMON_SRC)/%.c | $(OBJ_DIR_COMMON) 
 	cc -g -c $< -o $@
