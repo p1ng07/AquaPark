@@ -16,7 +16,10 @@ OBJ_COMMON := $(COMMON_SRC:$(COMMON_SRC_DIR)/../%.c=$(OBJ_DIR_COMMON)/%.o)
 OBJ_MONIT := $(MONIT_SRC:$(MONIT_SRC_DIR)/../%.c=$(OBJ_DIR_MONIT)/%.o)
 OBJ_SIMUL := $(SIMUL_SRC:$(SIMUL_SRC_DIR)/../%.c=$(OBJ_DIR_SIMUL)/%.o)
 
-all: monitor simulador
+all: bin_directory monitor simulador 
+
+bin_directory:
+	mkdir bin
 
 monitor: $(OBJ_MONIT) $(OBJ_COMMON)
 	gcc -g -Wall $^ -o bin/$@
