@@ -14,8 +14,10 @@
   do {                                                                         \
     char buffer[200];                                                          \
     snprintf(buffer, 201, __VA_ARGS__);                                        \
+    printf("EVENT: ");                                                         \
+    printf(__VA_ARGS__);                                                       \
+    printf("\n");                                                              \
     fputs(buffer, file);                                                       \
   } while (0)
-
 
 #endif
