@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/prctl.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -82,6 +84,8 @@ int main(int argc, char *argv[]) {
     exit(1);
   } else if (childpid == 0) {
     // Processo foi criado
+    // Marcar o child process para morrer quando o pai morrer
+    prctl(PR_SET_PDEATHSIG, SIGHUP);
     poll_and_interpret_client_messages(fd_cliente);
   }
 
