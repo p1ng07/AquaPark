@@ -18,6 +18,7 @@
   Esta interpretação passa por atualizar dados, escrever eventos, etc
 */
 void poll_and_interpret_client_messages(int fd_cliente);
+int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cliente);
 
 int main(int argc, char *argv[]) {
 
@@ -30,46 +31,8 @@ int main(int argc, char *argv[]) {
   // Carregar configuração de ficheiro
   configuration _conf = extract_config_from_file(argv[1]);
 
-  int server_socket, len;
-  // Socket
-  struct sockaddr_un saun, fsaun;
-
-  // Criar socket unix
-  if ((server_socket = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-    perror("server: socket");
-    return 1;
-  }
-
-  // Permitir a reutilização da socket (redundante porque já fazemos o unlink()
-  // à frente)
-  int options = 1;
-  setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&options,
-             sizeof(options));
-
-  saun.sun_family = AF_UNIX;
-  strcpy(saun.sun_path, ADDRESS_SOCKET);
-
-  // "Unlink" conexoes que já existissem a sockets com este address
-  unlink(ADDRESS_SOCKET);
-  len = sizeof(saun.sun_family) + strlen(saun.sun_path);
-
-  // Dar um nome (saun) à socket
-  if (bind(server_socket, &saun, len) < 0) {
-    perror("server: bind");
-    return 1;
-  }
-
-  // Mete o servidor num estado passivo há espera de conexoes
-  if (listen(server_socket, 5) < 0) {
-    perror("server: listen");
-    return 1;
-  }
-  // Bloqueia até receber uma conexao de um cliente
-  int fd_cliente, fromlen;
-  if ((fd_cliente = accept(server_socket, &fsaun, &fromlen)) < 0) {
-    perror("server: accept");
-    return 1;
-  }
+  int fd_cliente, server_socket = -1;
+  create_socket_and_wait_for_client_connection(&server_socket, &fd_cliente);
 
   // Lançar um process filho para lidar com messagens do simulador
 
@@ -90,12 +53,6 @@ int main(int argc, char *argv[]) {
   }
 
   char buffer[MAX_MESSAGE_BUFFER_SIZE] = "Messagem";
-
-
-  // TODO Em vez de fazer isto, criar um processo à parte que apenas imprime mensagens vindas do cliente
-  // TODO Alternativa
-
-  printf("%s", buffer);
 
   // File handler com opção "append" (leitura, escrita, juntar ao fim do
   // ficheiro)
@@ -152,9 +109,57 @@ void poll_and_interpret_client_messages(int fd_cliente) {
     
     // Ler mensagem vindo do simulador
     char buffer[MAX_MESSAGE_BUFFER_SIZE];
-    read(fd_cliente, buffer, sizeof(buffer));
+    recv(fd_cliente, buffer, sizeof(buffer), 0);
 
-    // TODO Interpretar mensagem
+    // TODO Ler mensagemm, escrever e depois bloquear o processo
     printf("%s", buffer);
   }
+}
+
+/*
+  Summary: Cria uma socket e espera por uma conexao do servidor
+  Returns: Socket criada e file descriptor da socket do cliente atraves dos parametros
+ */
+int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cliente){
+  int len;
+  // Socket
+  struct sockaddr_un saun, fsaun;
+
+  // Criar socket unix
+  if ((*server_socket = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+    perror("server: socket");
+    return 1;
+  }
+
+  // Permitir a reutilização da socket (redundante porque já fazemos o unlink()
+  // à frente)
+  int options = 1;
+  setsockopt(*server_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&options,
+             sizeof(options));
+
+  saun.sun_family = AF_UNIX;
+  strcpy(saun.sun_path, ADDRESS_SOCKET);
+
+  // "Unlink" conexoes que já existissem a sockets com este address
+  unlink(ADDRESS_SOCKET);
+  len = sizeof(saun.sun_family) + strlen(saun.sun_path);
+
+  // Dar um nome (saun) à socket
+  if (bind(*server_socket, &saun, len) < 0) {
+    perror("server: bind");
+    return 1;
+  }
+
+  // Mete o servidor num estado passivo há espera de conexoes
+  if (listen(*server_socket, 5) < 0) {
+    perror("server: listen");
+    return 1;
+  }
+  // Bloqueia até receber uma conexao de um cliente
+  int fromlen;
+  if ((*fd_cliente = accept(*server_socket, &fsaun, &fromlen)) < 0) {
+    perror("server: accept");
+    return 1;
+  }
+
 }
