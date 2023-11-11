@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <stdlib.h>
 
 int main(int argc, char* argv[]) {
 
@@ -34,17 +35,12 @@ int main(int argc, char* argv[]) {
   }
 
   configuration conf = extract_config_from_file(argv[1]);
+  conf_parameter *param = get_parameter_from_configuration(&conf, new_str("nome"));
 
-  char message[MAX_MESSAGE_BUFFER_SIZE] = "Isto é o simulador\n";
+  char* message = (char*)malloc(sizeof(char)*param->str.length);
+  message = param->str.value;
 
-  send(client_socket,message, strlen(message), 0);
-
-  conf_parameter *param =
-      get_parameter_from_configuration(&conf, new_str("negativo"));
-
-  if (param != NULL) {
-    printf("%d", param->i);
-  }
+  send(client_socket,message, param->str.length, 0);
 
   return 0;
 }

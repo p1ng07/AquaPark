@@ -1,5 +1,6 @@
 #include "../common/common.h"
 #include "../common/configuration.h"
+#include "./menu.h"
 #include "events.h"
 #include <limits.h>
 #include <stdbool.h>
@@ -48,7 +49,6 @@ int main(int argc, char *argv[]) {
   } else if (childpid == 0) {
     // Processo foi criado
     // Marcar o child process para morrer quando o pai morrer
-    prctl(PR_SET_PDEATHSIG, SIGHUP);
     poll_and_interpret_client_messages(fd_cliente);
   }
 
@@ -105,15 +105,15 @@ int main(int argc, char *argv[]) {
 }
 
 void poll_and_interpret_client_messages(int fd_cliente) {
-  while(1){
+  /* while(1){ */
     
     // Ler mensagem vindo do simulador
     char buffer[MAX_MESSAGE_BUFFER_SIZE];
     recv(fd_cliente, buffer, sizeof(buffer), 0);
 
     // TODO Ler mensagemm, escrever e depois bloquear o processo
-    printf("%s", buffer);
-  }
+    printf("Messagem do simulador: %s\n", buffer);
+  /* } */
 }
 
 /*
@@ -123,7 +123,7 @@ void poll_and_interpret_client_messages(int fd_cliente) {
 int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cliente){
   int len;
   // Socket
-  struct sockaddr_un saun, fsaun;
+  struct sockaddr_un saun;
 
   // Criar socket unix
   if ((*server_socket = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
@@ -145,7 +145,7 @@ int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cli
   len = sizeof(saun.sun_family) + strlen(saun.sun_path);
 
   // Dar um nome (saun) à socket
-  if (bind(*server_socket, &saun, len) < 0) {
+  if (bind(*server_socket, (struct sockaddr *)&saun, len) < 0) {
     perror("server: bind");
     return 1;
   }
@@ -155,9 +155,10 @@ int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cli
     perror("server: listen");
     return 1;
   }
+
   // Bloqueia até receber uma conexao de um cliente
   int fromlen;
-  if ((*fd_cliente = accept(*server_socket, &fsaun, &fromlen)) < 0) {
+  if ((*fd_cliente = accept(*server_socket, (struct sockaddr *) &saun, &fromlen)) < 0) {
     perror("server: accept");
     return 1;
   }
