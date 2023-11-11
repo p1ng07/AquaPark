@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  write_event(file_eventos, "O Julio é o Cbum, %s \n", "e o miguel é o ramon");
+  write_event(file_eventos, "O Julio é o Cbum, %s \n", "e o miguel é o ramon, %s \n", "porque o CBum ganha sempre (no braço de ferro)");
 
   close(server_socket);
   return 0;
