@@ -37,10 +37,11 @@ int main(int argc, char* argv[]) {
   configuration conf = extract_config_from_file(argv[1]);
   conf_parameter *param = get_parameter_from_configuration(&conf, new_str("nome"));
 
-  char* message = (char*)malloc(sizeof(char)*param->str.length);
-  message = param->str.value;
+  char message[MAX_MESSAGE_BUFFER_SIZE] = "Isto é o simulador\n";
+  
+  scanf("%s",message);
 
-  send(client_socket,message, param->str.length, 0);
+  send(client_socket, message, strlen(message), 0);
 
   return 0;
 }
