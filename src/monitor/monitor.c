@@ -13,8 +13,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-// TODO
-
 int main(int argc, char *argv[]) {
 
   if (argc < 3) {
@@ -24,7 +22,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Carregar configuração de ficheiro
-  configuration _conf = extract_config_from_file(argv[1]);
+  configuration conf = extract_config_from_file(argv[1]);
 
   int fd_cliente, server_socket = -1;
   create_socket_and_wait_for_client_connection(&server_socket, &fd_cliente);
@@ -42,6 +40,9 @@ int main(int argc, char *argv[]) {
   FILE *file_eventos = fopen(argv[2], "a");
 
   bool menu_principal_running = true;
+
+  // Parar execucao aqui por enquanto só para fazer a demonstração ao professor
+  while(1){};
 
   while (menu_principal_running) {
     printf("1 - Iniciar simulação\n");
