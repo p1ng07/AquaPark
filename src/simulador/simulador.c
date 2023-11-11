@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  int i, client_socket, len;
+  int client_socket, len;
   struct sockaddr_un saun;
 
   if ((client_socket = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
 
   len = sizeof(saun.sun_family) + strlen(saun.sun_path);
 
-  if (connect(client_socket, &saun, len) < 0) {
+  if (connect(client_socket, (const struct sockaddr*)&saun, len) < 0) {
     perror("client: connect");
     return 1;
   }
@@ -37,11 +37,14 @@ int main(int argc, char* argv[]) {
   configuration conf = extract_config_from_file(argv[1]);
   conf_parameter *param = get_parameter_from_configuration(&conf, new_str("nome"));
 
-  char message[MAX_MESSAGE_BUFFER_SIZE] = "Isto é o simulador\n";
+  char message[MAX_MESSAGE_BUFFER_SIZE];
   
   scanf("%s",message);
 
-  send(client_socket, message, strlen(message), 0);
+  send(client_socket, message, MAX_MESSAGE_BUFFER_SIZE, 0);
 
+  scanf("%s",message);
+
+  send(client_socket, message, MAX_MESSAGE_BUFFER_SIZE, 0);
   return 0;
 }

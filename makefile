@@ -7,6 +7,8 @@ OBJ_DIR_COMMON := ./obj
 OBJ_DIR_SIMUL := ./obj/simul
 OBJ_DIR_MONIT := ./obj/monit
 
+LIBS := -lpthread
+
 # ficheiros a compilar dos diferentes targets
 COMMON_SRC := $(wildcard ${COMMON_SRC_DIR}/*.c)
 MONIT_SRC := $(wildcard ${MONIT_SRC_DIR}/*.c)
@@ -19,16 +21,16 @@ OBJ_SIMUL := $(SIMUL_SRC:$(SIMUL_SRC_DIR)/../%.c=$(OBJ_DIR_SIMUL)/%.o)
 all:  monitor simulador 
 
 monitor: $(OBJ_MONIT) $(OBJ_COMMON)
-	gcc -g -Wall $^ -o bin/$@
+	gcc $(LIBS) -g -Wall $^ -o bin/$@
 
 simulador: $(OBJ_COMMON)  $(OBJ_SIMUL)
-	gcc -g -Wall $^ -o bin/$@
+	gcc $(LIBS) -g -Wall $^ -o bin/$@
 
 $(OBJ_DIR_COMMON)/%.o: $(COMMON_SRC)/%.c | $(OBJ_DIR_COMMON) 
-	gcc -g -Wall -c $< -o $@
+	gcc $(LIBS) -g -Wall -c $< -o $@
 
 $(OBJ_DIR_MONIT)/%.o: $(MONIT_SRC)/%.c | $(OBJ_DIR_MONIT) 
-	gcc -g -Wall -c $< -o $@
+	gcc $(LIBS) -g -Wall -c $< -o $@
 
 $(OBJ_DIR_SIMUL)/%.o: $(SIMUL_SRC)/%.c | $(OBJ_DIR_SIMUL) 
-	gcc -g -Wall -c $< -o $@
+	gcc $(LIBS) -g -Wall -c $< -o $@

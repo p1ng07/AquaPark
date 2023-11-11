@@ -1,25 +1,19 @@
 #include "../common/common.h"
 #include "../common/configuration.h"
+#include "../common/communication.h"
 #include "./menu.h"
 #include "events.h"
+#include <pthread.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
-#include <sys/prctl.h>
-#include <signal.h>
 #include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
 
 // TODO
-/*
-  Summary: Recebe e interpreta mensagens do simulador.
-  Esta interpretação passa por atualizar dados, escrever eventos, etc
-*/
-void poll_and_interpret_client_messages(int fd_cliente);
-int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cliente);
 
 int main(int argc, char *argv[]) {
 
@@ -35,24 +29,13 @@ int main(int argc, char *argv[]) {
   int fd_cliente, server_socket = -1;
   create_socket_and_wait_for_client_connection(&server_socket, &fd_cliente);
 
-  // Lançar um process filho para lidar com messagens do simulador
+  // Lançar uma thread para lidar com messagens do simulador
+  pthread_t reading_thread;
 
-  // TODO o monitor deve ter uma representação do simulador (atracoes, numero de pessoas, etc.)
-  // Esta representação deve ser atualizada pelo processo filho que lida com messagens do cliente
-  // Sempre que o processo filho recebe uma atualização dos dados, deve mandar um sinal aoa pai (SIGUSR) para fazer refresh do ecra
-  // O processo filho deve também lidar com eventos (escrever os eventos para o ficheiro de eventos)
-  int childpid = -1;
-  if ((childpid = fork()) < 0) {
-    perror("Não foi possível criar o processo que lida com as messagens do "
-	   "simulador.");
-    exit(1);
-  } else if (childpid == 0) {
-    // Processo foi criado
-    // Marcar o child process para morrer quando o pai morrer
-    poll_and_interpret_client_messages(fd_cliente);
-  }
+  int* allocated_fd_cliente = malloc(sizeof(int));
+  *allocated_fd_cliente = fd_cliente;
+  pthread_create(&reading_thread,0, (void*)poll_and_interpret_client_messages, allocated_fd_cliente);
 
-  char buffer[MAX_MESSAGE_BUFFER_SIZE] = "Messagem";
 
   // File handler com opção "append" (leitura, escrita, juntar ao fim do
   // ficheiro)
@@ -98,69 +81,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  write_event(file_eventos, "O Julio é o Cbum, %s \n", "e o miguel é o ramon, %s \n", "porque o CBum ganha sempre (no braço de ferro)");
-
   close(server_socket);
   return 0;
 }
 
-void poll_and_interpret_client_messages(int fd_cliente) {
-  /* while(1){ */
-    
-    // Ler mensagem vindo do simulador
-    char buffer[MAX_MESSAGE_BUFFER_SIZE];
-    recv(fd_cliente, buffer, sizeof(buffer), 0);
-
-    // TODO Ler mensagemm, escrever e depois bloquear o processo
-    printf("Messagem do simulador: %s\n", buffer);
-  /* } */
-}
-
-/*
-  Summary: Cria uma socket e espera por uma conexao do servidor
-  Returns: Socket criada e file descriptor da socket do cliente atraves dos parametros
- */
-int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cliente){
-  int len;
-  // Socket
-  struct sockaddr_un saun;
-
-  // Criar socket unix
-  if ((*server_socket = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
-    perror("server: socket");
-    return 1;
-  }
-
-  // Permitir a reutilização da socket (redundante porque já fazemos o unlink()
-  // à frente)
-  int options = 1;
-  setsockopt(*server_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&options,
-             sizeof(options));
-
-  saun.sun_family = AF_UNIX;
-  strcpy(saun.sun_path, ADDRESS_SOCKET);
-
-  // "Unlink" conexoes que já existissem a sockets com este address
-  unlink(ADDRESS_SOCKET);
-  len = sizeof(saun.sun_family) + strlen(saun.sun_path);
-
-  // Dar um nome (saun) à socket
-  if (bind(*server_socket, (struct sockaddr *)&saun, len) < 0) {
-    perror("server: bind");
-    return 1;
-  }
-
-  // Mete o servidor num estado passivo há espera de conexoes
-  if (listen(*server_socket, 5) < 0) {
-    perror("server: listen");
-    return 1;
-  }
-
-  // Bloqueia até receber uma conexao de um cliente
-  int fromlen;
-  if ((*fd_cliente = accept(*server_socket, (struct sockaddr *) &saun, &fromlen)) < 0) {
-    perror("server: accept");
-    return 1;
-  }
-
-}
