@@ -81,8 +81,7 @@ int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cli
   }
 
   // Bloqueia até receber uma conexao de um cliente
-  int fromlen;
-  if ((*fd_cliente = accept(*server_socket, (struct sockaddr *) &saun, (socklen_t*)&fromlen)) < 0) {
+  if ((*fd_cliente = accept(*server_socket, (struct sockaddr *) &saun, (socklen_t*)&len)) < 0) {
     perror("server: accept");
     return 1;
   }
