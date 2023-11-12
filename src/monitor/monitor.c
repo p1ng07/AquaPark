@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
   configuration conf = extract_config_from_file(argv[1]);
 
   int fd_cliente, server_socket = -1;
+  printf("Esperando conexão do simulador.\n");
   create_socket_and_wait_for_client_connection(&server_socket, &fd_cliente);
 
   // Lançar uma thread para lidar com messagens do simulador
