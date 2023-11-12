@@ -11,21 +11,30 @@ void poll_and_interpret_client_messages(int* fd_cliente) {
   // Ler mensagem vindo do simulador
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
 
-  // TODO Adicionar um mecanismo para parar esta thread, provavelmente com sinais
+  // TODO Adicionar um mecanismo para parar esta thread, provavelmente com
+  // sinais
 
   while (1) {
 
     // Ler mensagem com MAX_MESSAGE_BUFFER_SIZE de tamanho
     int n = readn(*fd_cliente, buffer, MAX_MESSAGE_BUFFER_SIZE);
 
-    if (n > 0){
+    if (n > 0) {
 
-      // Ler código identificador do tipo de mensagem (primeiras 5 letras da mensagem)
+      // Ler código identificador do tipo de mensagem (primeiras 5 letras da
+      // mensagem)
       char identificador[5];
       strncpy(identificador, buffer, 5);
 
-      if(strcmp(identificador, "EVENTO")){
-	printf("Evento no simulador: %s \n", buffer+5);
+      if (strncmp(buffer, "EVENT", 5) == 0) {
+        // Evento, TODO escrever no ficheiro
+        printf("EVENTO: %s \n", buffer + 5);
+
+      } else if (strncmp(buffer, "MESNG", 5) == 0) {
+        printf("LOG: %s \n", buffer + 5);
+
+      } else if (strncmp(buffer, "ERROR", 5) == 0) {
+        printf("ERRO: %s \n", buffer + 5);
       }
     }
   }

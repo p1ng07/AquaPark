@@ -3,11 +3,13 @@
 
 typedef enum MType {
   EVENT,
-  LOG
+  MESNG,
+  ERROR
 } MessageType;
 
 // Macro que recebe um communication type e transforma numa string
-#define string_from_com_type(type) #type
+#define string_from_com_type(TYPE) #TYPE
+#define xstring_from_com_type(TYPE) string_from_com_type(TYPE)
 
 /*
   Summary: Recebe e interpreta mensagens do simulador.

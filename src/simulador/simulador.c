@@ -57,21 +57,20 @@ int main(int argc, char* argv[]) {
     pthread_create(&user_thread_list[i], NULL,(void*)user_entry_point,info_send);
   }
 
+  char message[MAX_MESSAGE_BUFFER_SIZE];
+  
+  printf("Escreva uma mensagem para enviar: ");
+  scanf("%s",message);
+  printf("%s", message);
+
+  send_string_to_monitor(&client_socket, EVENT, message);
+
   // Esperar que threads acabem
   for (int i = 0; i < num_users_inicial->i; i++) {
     pthread_join(user_thread_list[i], NULL);
   }
 
-  char message[MAX_MESSAGE_BUFFER_SIZE];
-  
-  printf("Escreva uma mensagem para enviar: ");
-  scanf("%s\n",message);
+  send_string_to_monitor(&client_socket, ERROR, "Simulador fechou.");
 
-  send(client_socket, message, MAX_MESSAGE_BUFFER_SIZE, 0);
-
-  printf("Escreva uma mensagem para enviar: ");
-  scanf("%s\n",message);
-
-  send(client_socket, message, MAX_MESSAGE_BUFFER_SIZE, 0);
   return 0;
 }
