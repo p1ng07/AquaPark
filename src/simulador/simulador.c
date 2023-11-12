@@ -4,6 +4,7 @@
 #include "print.h"
 #include "user.h"
 #include <assert.h>
+#include <bits/pthreadtypes.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
@@ -46,25 +47,30 @@ int main(int argc, char* argv[]) {
   int* allocated_client_socket = malloc(sizeof(int));
   *allocated_client_socket = client_socket;
 
-  user_entry_point_info *info_send = malloc(sizeof(user_entry_point_info));
 
+  // Criacao de threads
   for (int i = 0; i < num_users_inicial->i; i++) {
-
-    info_send->i = i;
+    user_entry_point_info *info_send = malloc(sizeof(user_entry_point_info));
     info_send->socket_monitor = allocated_client_socket;
+    info_send->i = i;
 
     pthread_create(&user_thread_list[i], NULL,(void*)user_entry_point,info_send);
+  }
 
+  // Esperar que threads acabem
+  for (int i = 0; i < num_users_inicial->i; i++) {
     pthread_join(user_thread_list[i], NULL);
   }
 
   char message[MAX_MESSAGE_BUFFER_SIZE];
   
-  scanf("%s",message);
+  printf("Escreva uma mensagem para enviar: ");
+  scanf("%s\n",message);
 
   send(client_socket, message, MAX_MESSAGE_BUFFER_SIZE, 0);
 
-  scanf("%s",message);
+  printf("Escreva uma mensagem para enviar: ");
+  scanf("%s\n",message);
 
   send(client_socket, message, MAX_MESSAGE_BUFFER_SIZE, 0);
   return 0;

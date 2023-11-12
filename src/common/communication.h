@@ -1,6 +1,14 @@
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
 
+typedef enum MType {
+  EVENT,
+  LOG
+} MessageType;
+
+// Macro que recebe um communication type e transforma numa string
+#define string_from_com_type(type) #type
+
 /*
   Summary: Recebe e interpreta mensagens do simulador.
   Esta interpretação passa por atualizar dados, escrever eventos, etc

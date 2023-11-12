@@ -1,23 +1,32 @@
 #include "common.h"
 #include "communication.h"
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <stdio.h>
 #include <unistd.h>
 
 void poll_and_interpret_client_messages(int* fd_cliente) {
-  printf("Comecada thread para ler messagens: %i", *fd_cliente);
+  printf("Comecada thread para ler messagens.\n");
   // Ler mensagem vindo do simulador
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
 
+  // TODO Adicionar um mecanismo para parar esta thread, provavelmente com sinais
+
   while (1) {
 
-    // TOOD usar o readn para aceitar messagens do simulador
+    // Ler mensagem com MAX_MESSAGE_BUFFER_SIZE de tamanho
     int n = readn(*fd_cliente, buffer, MAX_MESSAGE_BUFFER_SIZE);
 
-    // TODO Ler mensagemm, escrever e depois bloquear o processo
     if (n > 0){
-	printf("Messagem do simulador: %s\n", buffer);
+
+      // Ler código identificador do tipo de mensagem (primeiras 5 letras da mensagem)
+      char identificador[5];
+      strncpy(identificador, buffer, 5);
+
+      if(strcmp(identificador, "EVENTO")){
+	printf("Evento no simulador: %s \n", buffer+5);
+      }
     }
   }
 }
@@ -68,6 +77,9 @@ int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cli
     perror("server: accept");
     return 1;
   }
+
+  printf("Recebida conexão do simulador\n");
+  
   return 0;
 }
 
