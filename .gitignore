@@ -2,3 +2,5 @@ build/
 main
 bin/*
 obj/
+eventos.txt
+relatorio.pdf
