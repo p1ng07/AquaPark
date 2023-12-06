@@ -1,4 +1,5 @@
 #include "../common/configuration.h"
+#include "../common/communication.h"
 #include "../common/common.h"
 #include "../common/string.h"
 #include "print.h"

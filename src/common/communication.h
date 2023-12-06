@@ -23,4 +23,10 @@ int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cli
    Bloqueia até conseguir ler os nbytes ou dar erro */
 int readn(int fd, char *ptr, int nbytes);
 
+/*
+  Summary: Envia uma mensagem com um certo identificador para uma socket
+  AVISO: O tamanho da mensagem deve ser <= MAX_MESSAGE_BUFFER_SIZE - 5
+*/
+void send_message_to_socket(int*socket, MessageType type, char* message);
+
 #endif

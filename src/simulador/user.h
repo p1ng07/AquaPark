@@ -12,9 +12,8 @@ typedef struct {
 
 void user_entry_point(user_entry_point_info* info);
 
+void send_message_to_socket(int*socket, MessageType type, char* message);
 
-
-// Forward-declaration do macro que envia mensagens para o monitor 
-void send_string_to_monitor(int *socket_monitor, MessageType type, char *message);
+void thread_send_message_to_socket(int *socket, MessageType type, char *message);
 
 #endif

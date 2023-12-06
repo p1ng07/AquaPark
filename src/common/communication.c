@@ -21,18 +21,13 @@ void poll_and_interpret_client_messages(int* fd_cliente) {
 
     if (n > 0) {
 
-      // Ler código identificador do tipo de mensagem (primeiras 5 letras da
-      // mensagem)
-      char identificador[5];
-      strncpy(identificador, buffer, 5);
+      // Os primeiros 5 carateres sao o identificador da mensagem
 
       if (strncmp(buffer, "EVENT", 5) == 0) {
         // Evento, TODO escrever no ficheiro
         printf("EVENTO: %s \n", buffer + 5);
-
       } else if (strncmp(buffer, "MESNG", 5) == 0) {
         printf("LOG: %s \n", buffer + 5);
-
       } else if (strncmp(buffer, "ERROR", 5) == 0) {
         printf("ERRO: %s \n", buffer + 5);
       }
@@ -110,4 +105,28 @@ int readn(int fd, char *ptr, int nbytes)
 		ptr += nread;
 	}
 	return (nbytes - nleft);
+}
+
+void send_message_to_socket(int*socket, MessageType type, char* message) {
+  if(type == EVENT){
+    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "EVENT";
+    send(*socket,
+	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+         MAX_MESSAGE_BUFFER_SIZE, 0);
+  }else if(type == MESNG){
+    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "MESNG";
+    send(*socket,
+	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+         MAX_MESSAGE_BUFFER_SIZE, 0);
+  }else if (type == ERROR){
+    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ERROR";
+    send(*socket,
+	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+         MAX_MESSAGE_BUFFER_SIZE, 0);
+  }else if (type == BEGIN){
+    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "BEGIN";
+    send(*socket,
+	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+         MAX_MESSAGE_BUFFER_SIZE, 0);
+  }
 }
