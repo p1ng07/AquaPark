@@ -4,7 +4,8 @@
 typedef enum MType {
   EVENT,
   MESNG,
-  ERROR
+  ERROR,
+  BEGIN
 } MessageType;
 
 // Macro que recebe um communication type e transforma numa string

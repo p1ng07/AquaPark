@@ -42,9 +42,6 @@ int main(int argc, char *argv[]) {
 
   bool menu_principal_running = true;
 
-  // Parar execucao aqui por enquanto só para fazer a demonstração ao professor
-  while(1){};
-
   while (menu_principal_running) {
     printf("1 - Iniciar simulação\n");
     printf("2 - Terminar simulação\n");
@@ -59,26 +56,22 @@ int main(int argc, char *argv[]) {
 
     switch (input_choice) {
     case 1:
-      // TODO Iniciar simulação
+      // Iniciar simulação
+      {
+	char buffer[10];
+	send_message_to_socket(&fd_cliente, BEGIN, buffer);
+      }
       break;
     case 2:
-      // TODO Terminar simulaçã̀o
-      break;
-    case 3:
-      // TODO Limpar ficheiro de eventos
-
       // Reabrir o ficheiro em modo de escrita faz com que os conteúdos sejam
       // apagados
       freopen(argv[2], "w", file_eventos);
+
+      // Reabri-lo em modo append para poder ser escrito
       freopen(argv[2], "a", file_eventos);
       break;
-    case 4:
-      // TODO Mandar sinal para passar uma hora na simulação
-      break;
-    case 5:
-      // TODO Mandar sinal para passar x horas na simulação
-      printf("\n Quantas horas devem passar? ");
-      int elapsed_hours = get_menu_input(0, INT_MAX);
+    case 3:
+      // TODO Fechar simulação
       break;
     }
   }

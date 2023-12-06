@@ -13,12 +13,41 @@
 #include <sys/un.h>
 #include <stdlib.h>
 
+
+/*
+  Summary: Espera pela mensagem de começo vinda do monitor
+*/
+void wait_for_begin_message(int socket) {
+  char buffer[MAX_MESSAGE_BUFFER_SIZE];
+
+  // TODO Adicionar um mecanismo para parar esta thread, provavelmente com
+  // sinais
+
+  while (1) {
+    // Ler mensagem com MAX_MESSAGE_BUFFER_SIZE de tamanho
+    int n = readn(socket, buffer, MAX_MESSAGE_BUFFER_SIZE);
+    // Ler código identificador do tipo de mensagem (primeiras 5 letras da
+    // mensagem)
+
+    if (strncmp(buffer, "BEGIN", 5) == 0) {
+      break;
+    }
+  }
+}
+
 int main(int argc, char* argv[]) {
 
   if (argc < 2) {
     printf("ERRO: Não foi especificado um ficheiro de configuração");
     return 1;
   }
+
+  // Carregar parametros
+  configuration conf = extract_config_from_file(argv[1]);
+  conf_parameter* num_users_inicial = get_parameter_from_configuration(&conf, new_str("users_inicias"));
+
+  assert(num_users_inicial->i <= MAX_THREADS);
+
 
   int client_socket, len;
   struct sockaddr_un saun;
@@ -38,10 +67,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  configuration conf = extract_config_from_file(argv[1]);
-  conf_parameter* num_users_inicial = get_parameter_from_configuration(&conf, new_str("users_inicias"));
-
-  assert(num_users_inicial->i <= MAX_THREADS);
+  // Esperar por uma mensagem de começo
+  wait_for_begin_message(client_socket);
 
   pthread_t user_thread_list[MAX_THREADS];
 
@@ -60,18 +87,12 @@ int main(int argc, char* argv[]) {
 
   char message[MAX_MESSAGE_BUFFER_SIZE];
   
-  printf("Escreva uma mensagem para enviar: ");
-  scanf("%s",message);
-  printf("%s", message);
-
-  send_string_to_monitor(&client_socket, EVENT, message);
-
   // Esperar que threads acabem
   for (int i = 0; i < num_users_inicial->i; i++) {
     pthread_join(user_thread_list[i], NULL);
   }
 
-  send_string_to_monitor(&client_socket, ERROR, "Simulador fechou.");
+  send_message_to_socket(&client_socket, ERROR, "Simulador fechou.");
 
   return 0;
 }
