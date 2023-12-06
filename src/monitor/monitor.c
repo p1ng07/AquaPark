@@ -44,12 +44,10 @@ int main(int argc, char *argv[]) {
 
   while (menu_principal_running) {
     printf("1 - Iniciar simulação\n");
-    printf("2 - Terminar simulação\n");
+    printf("2 - Limpar ficheiro de eventos\n");
+    printf("3 - Terminar simulação\n");
     // TODO: Adicionar opcoes de passar horas quando a simulação está a
     // correr
-    printf("3 - Reiniciar ficheiro de eventos\n");
-    printf("4 - Passar hora na simulação\n");
-    printf("5 - Passar x horas na simulação\n");
     printf("Opcao: ");
 
     int input_choice = get_menu_input(0, 4);
@@ -71,7 +69,13 @@ int main(int argc, char *argv[]) {
       freopen(argv[2], "a", file_eventos);
       break;
     case 3:
-      // TODO Fechar simulação
+      // Fechar simulação
+      {
+	char buffer[10];
+	send_message_to_socket(&fd_cliente, ENDSM, buffer);
+	close(server_socket);
+	return 0;
+      }
       break;
     }
   }

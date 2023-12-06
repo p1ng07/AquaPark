@@ -13,9 +13,9 @@
 #include <sys/un.h>
 #include <stdlib.h>
 
-
 /*
-  Summary: Espera pela mensagem de começo vinda do monitor
+  Summary: Espera pela mensagem de começo vinda do monitor, pode também receber
+  uma mensagem para fechar a simulação
 */
 void wait_for_begin_message(int socket) {
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
@@ -30,6 +30,11 @@ void wait_for_begin_message(int socket) {
     // mensagem)
 
     if (strncmp(buffer, "BEGIN", 5) == 0) {
+      break;
+    }else if (strncmp(buffer, "ENDSM", 5) == 0){
+      printf("Ordem de monitor: Terminar simulação.");
+      scanf("");
+      exit(0);
       break;
     }
   }
@@ -85,8 +90,6 @@ int main(int argc, char* argv[]) {
     pthread_create(&user_thread_list[i], NULL,(void*)user_entry_point,info_send);
   }
 
-  char message[MAX_MESSAGE_BUFFER_SIZE];
-  
   // Esperar que threads acabem
   for (int i = 0; i < num_users_inicial->i; i++) {
     pthread_join(user_thread_list[i], NULL);

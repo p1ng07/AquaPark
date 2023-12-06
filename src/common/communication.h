@@ -5,7 +5,8 @@ typedef enum MType {
   EVENT,
   MESNG,
   ERROR,
-  BEGIN
+  BEGIN, // Começar simulação
+  ENDSM  // Acabar simulação
 } MessageType;
 
 // Macro que recebe um communication type e transforma numa string

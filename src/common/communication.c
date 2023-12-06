@@ -1,5 +1,7 @@
 #include "common.h"
 #include "communication.h"
+#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -13,6 +15,7 @@ void poll_and_interpret_client_messages(int* fd_cliente) {
 
   // TODO Adicionar um mecanismo para parar esta thread, provavelmente com
   // sinais
+  // Ideia: Receber um SIGUSRX que muda a variavel de controlo do while para false
 
   while (1) {
 
@@ -128,5 +131,13 @@ void send_message_to_socket(int*socket, MessageType type, char* message) {
     send(*socket,
 	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
          MAX_MESSAGE_BUFFER_SIZE, 0);
+  }else if (type == ENDSM){
+    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ENDSM";
+    send(*socket,
+	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+         MAX_MESSAGE_BUFFER_SIZE, 0);
+  }else{
+    fprintf(stderr,"Tipo de mensagem '%i' não está declarado para envio\n", type);
+    assert(0);
   }
 }
