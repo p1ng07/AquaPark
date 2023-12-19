@@ -2,12 +2,16 @@
 #define USER_H
 
 #include <pthread.h>
+#include <stdbool.h>
 #include <bits/pthreadtypes.h>
 #include "../common/communication.h"
 
 typedef struct {
   int *socket_monitor;
   int i;
+  int idade;
+  bool deficient;
+  bool is_man;
 } user_entry_point_info;
 
 void user_entry_point(user_entry_point_info* info);

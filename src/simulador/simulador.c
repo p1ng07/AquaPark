@@ -87,6 +87,24 @@ int main(int argc, char* argv[]) {
     info_send->socket_monitor = allocated_client_socket;
     info_send->i = i;
 
+    // determinar idade, género e deficiencia
+    int random_number = rand();
+
+    if (rand() < (float)RAND_MAX * 0.19f){
+      info_send->deficient = true;
+    }else{
+      info_send->deficient = false;
+    }
+    
+    if (rand() < (float)RAND_MAX * 0.50){
+      info_send->is_man = true;
+    }else{
+      info_send->is_man = false;
+    }
+
+    // Idade pode ir dos 10 aos 70
+    info_send->idade = (rand() % 70) + 10;
+
     pthread_create(&user_thread_list[i], NULL,(void*)user_entry_point,info_send);
   }
 
