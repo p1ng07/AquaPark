@@ -41,15 +41,15 @@ void wait_for_begin_message(int socket) {
   }
 }
 
-bool parque_aberto = true;
+bool parque_aberto = false;
 
   // Contador que mantém o número atual de utilizadores no parque
 int global_user_counter = 0;
 
-pthread_t **user_thread_list = NULL;
+unsigned long *global_user_thread_list = NULL;
 
 void cleanup_thread_list(int thread_index){
-  user_thread_list[thread_index] = 0;
+  global_user_thread_list[thread_index] = 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
   }
 
     // Alloca espaço para informação de threads
-  user_thread_list = calloc(MAX_THREADS,sizeof(pthread_t));
+  global_user_thread_list = calloc(MAX_THREADS,sizeof(pthread_t));
 
   // Carregar parametros
   configuration conf = extract_config_from_file(argv[1]);
@@ -111,15 +111,16 @@ int main(int argc, char* argv[]) {
     // Idade pode ir dos 10 aos 70
     info_send->idade = (rand() % 70) + 10;
 
-    pthread_create(user_thread_list[i], NULL,(void*)user_entry_point,info_send);
+    pthread_create(&global_user_thread_list[i], NULL,(void*)user_entry_point,info_send);
+    info_send->pthread_info = global_user_thread_list[i];
   }
 
   printf("Esperando\n");
 
   // Esperar que threads acabem
   for (int i = 0; i < MAX_THREADS; i++) {
-    if (user_thread_list[i]){
-	pthread_join(*user_thread_list[i], NULL);
+    if (global_user_thread_list[i]){
+	pthread_join(global_user_thread_list[i], NULL);
     }
   }
 

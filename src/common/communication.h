@@ -5,6 +5,7 @@ typedef enum MType {
   EVENT,
   MESNG,
   ERROR,
+  ENTER, // Utilizador entrou no parque, formato: "ENTER id"
   BEGIN, // Começar simulação
   ENDSM  // Acabar simulação
 } MessageType;

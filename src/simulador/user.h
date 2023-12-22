@@ -9,6 +9,7 @@
 typedef struct {
   int *socket_monitor;
   int i;
+  unsigned long pthread_info;
   int idade;
   bool deficient;
   bool is_man;

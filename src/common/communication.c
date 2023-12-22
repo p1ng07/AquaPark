@@ -1,5 +1,6 @@
 #include "common.h"
 #include "communication.h"
+#include "string.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +9,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-void poll_and_interpret_client_messages(int* fd_cliente) {
+void poll_and_interpret_client_messages(int* fd_cliente, int* event_file_descriptor) {
   printf("Comecada thread para ler messagens.\n");
   // Ler mensagem vindo do simulador
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
@@ -16,8 +17,9 @@ void poll_and_interpret_client_messages(int* fd_cliente) {
   // TODO Adicionar um mecanismo para parar esta thread, provavelmente com
   // sinais
   // Ideia: Receber um SIGUSRX que muda a variavel de controlo do while para false
+  int running = 1;
 
-  while (1) {
+  while (running) {
 
     // Ler mensagem com MAX_MESSAGE_BUFFER_SIZE de tamanho
     int n = readn(*fd_cliente, buffer, MAX_MESSAGE_BUFFER_SIZE);
@@ -25,6 +27,10 @@ void poll_and_interpret_client_messages(int* fd_cliente) {
     if (n > 0) {
 
       // Os primeiros 5 carateres sao o identificador da mensagem
+      char message[MAX_MESSAGE_BUFFER_SIZE];
+      strncpy(message, buffer + 5, MAX_MESSAGE_BUFFER_SIZE - 5);
+      char identifier[5];
+      strncpy(identifier, buffer, 5);
 
       if (strncmp(buffer, "EVENT", 5) == 0) {
         // Evento, TODO escrever no ficheiro
@@ -33,6 +39,17 @@ void poll_and_interpret_client_messages(int* fd_cliente) {
         printf("LOG: %s \n", buffer + 5);
       } else if (strncmp(buffer, "ERROR", 5) == 0) {
         printf("ERRO: %s \n", buffer + 5);
+      } else if (strncmp(buffer, "ENDSM", 5) == 0) {
+	// TODO Handle simulação acabou
+	running = 0;
+      } else if (strncmp(buffer, "ENTER", 5) == 0) {
+	// User entrou no parque
+	int entered_user_id = atoi(message);
+
+      }else{
+	fprintf(stderr, "Tipo de mensagem '%s' não está declarado para receber\n",
+		identifier);
+	assert(0);
       }
     }
   }
@@ -128,6 +145,11 @@ void send_message_to_socket(int*socket, MessageType type, char* message) {
          MAX_MESSAGE_BUFFER_SIZE, 0);
   }else if (type == BEGIN){
     char buffer[MAX_MESSAGE_BUFFER_SIZE] = "BEGIN";
+    send(*socket,
+	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+         MAX_MESSAGE_BUFFER_SIZE, 0);
+  }else if (type == ENTER){
+    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ENTER";
     send(*socket,
 	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
          MAX_MESSAGE_BUFFER_SIZE, 0);
