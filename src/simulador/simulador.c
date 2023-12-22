@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "../common/configuration.h"
 #include "../common/communication.h"
 #include "../common/common.h"
@@ -40,12 +41,26 @@ void wait_for_begin_message(int socket) {
   }
 }
 
+bool parque_aberto = true;
+
+  // Contador que mantém o número atual de utilizadores no parque
+int global_user_counter = 0;
+
+pthread_t **user_thread_list = NULL;
+
+void cleanup_thread_list(int thread_index){
+  user_thread_list[thread_index] = 0;
+}
+
 int main(int argc, char* argv[]) {
 
   if (argc < 2) {
     printf("ERRO: Não foi especificado um ficheiro de configuração");
     return 1;
   }
+
+    // Alloca espaço para informação de threads
+  user_thread_list = calloc(MAX_THREADS,sizeof(pthread_t));
 
   // Carregar parametros
   configuration conf = extract_config_from_file(argv[1]);
@@ -75,42 +90,37 @@ int main(int argc, char* argv[]) {
   // Esperar por uma mensagem de começo
   wait_for_begin_message(client_socket);
 
-  pthread_t user_thread_list[MAX_THREADS];
-
   int* allocated_client_socket = malloc(sizeof(int));
   *allocated_client_socket = client_socket;
 
+  // TODO Adicionar hora local de inicio de simulação, horas para cada diversão estar aberta, e mudar "parque_aberto" consoante as horas, qualquer o intervalo de cada hora com base num parametro de hora_inicial hora_final e tempo_de_simulação
+
+  // Contador que se usa para criar um id única para cada utilizador
+  int counter_id_user = 0;
 
   // Criacao de threads
   for (int i = 0; i < num_users_inicial->i; i++) {
     user_entry_point_info *info_send = malloc(sizeof(user_entry_point_info));
     info_send->socket_monitor = allocated_client_socket;
-    info_send->i = i;
+    info_send->i = counter_id_user++;
+    global_user_counter++;
 
-    // determinar idade, género e deficiencia
-    int random_number = rand();
-
-    if (rand() < (float)RAND_MAX * 0.19f){
-      info_send->deficient = true;
-    }else{
-      info_send->deficient = false;
-    }
-    
-    if (rand() < (float)RAND_MAX * 0.50){
-      info_send->is_man = true;
-    }else{
-      info_send->is_man = false;
-    }
+    info_send->deficient = rand() < (float)RAND_MAX * 0.19f;
+    info_send->is_man = rand() < (float)RAND_MAX * 0.50;
 
     // Idade pode ir dos 10 aos 70
     info_send->idade = (rand() % 70) + 10;
 
-    pthread_create(&user_thread_list[i], NULL,(void*)user_entry_point,info_send);
+    pthread_create(user_thread_list[i], NULL,(void*)user_entry_point,info_send);
   }
 
+  printf("Esperando\n");
+
   // Esperar que threads acabem
-  for (int i = 0; i < num_users_inicial->i; i++) {
-    pthread_join(user_thread_list[i], NULL);
+  for (int i = 0; i < MAX_THREADS; i++) {
+    if (user_thread_list[i]){
+	pthread_join(*user_thread_list[i], NULL);
+    }
   }
 
   send_message_to_socket(&client_socket, ERROR, "Simulador fechou.");
