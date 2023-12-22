@@ -3,6 +3,7 @@
 #include "../common/communication.h"
 #include "./menu.h"
 #include "events.h"
+#include <event2/event.h>
 #include <pthread.h>
 #include <limits.h>
 #include <stdbool.h>
@@ -24,6 +25,10 @@ int main(int argc, char *argv[]) {
   // Carregar configuração de ficheiro
   configuration conf = extract_config_from_file(argv[1]);
 
+  // File handler com opção "append" (leitura, escrita, juntar ao fim do
+  // ficheiro)
+  FILE *file_eventos = fopen(argv[2], "a");
+
   int fd_cliente, server_socket = -1;
   printf("Esperando conexão do simulador.\n");
   create_socket_and_wait_for_client_connection(&server_socket, &fd_cliente);
@@ -31,14 +36,13 @@ int main(int argc, char *argv[]) {
   // Lançar uma thread para lidar com messagens do simulador
   pthread_t reading_thread;
 
+  communication_thread_args* args = malloc(sizeof(communication_thread_args));
+  args->fd_cliente = &fd_cliente;
+  args->file_eventos = argv[2];
+
   int* allocated_fd_cliente = malloc(sizeof(int));
   *allocated_fd_cliente = fd_cliente;
-  pthread_create(&reading_thread,0, (void*)poll_and_interpret_client_messages, allocated_fd_cliente);
-
-
-  // File handler com opção "append" (leitura, escrita, juntar ao fim do
-  // ficheiro)
-  FILE *file_eventos = fopen(argv[2], "a");
+  pthread_create(&reading_thread,0, (void*)poll_and_interpret_client_messages, args);
 
   bool menu_principal_running = true;
 
@@ -72,7 +76,6 @@ int main(int argc, char *argv[]) {
       // Fechar simulação
       {
 	char buffer[10];
-	send_message_to_socket(&fd_cliente, ENDSM, buffer);
 	close(server_socket);
 	return 0;
       }
@@ -81,6 +84,7 @@ int main(int argc, char *argv[]) {
   }
 
   close(server_socket);
+  fclose(file_eventos);
   return 0;
 }
 

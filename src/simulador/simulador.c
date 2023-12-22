@@ -34,7 +34,6 @@ void wait_for_begin_message(int socket) {
       break;
     }else if (strncmp(buffer, "ENDSM", 5) == 0){
       printf("Ordem de monitor: Terminar simulação.");
-      scanf("");
       exit(0);
       break;
     }

@@ -1,6 +1,7 @@
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
 
+#include <stdio.h>
 typedef enum MType {
   EVENT,
   MESNG,
@@ -10,6 +11,11 @@ typedef enum MType {
   ENDSM  // Acabar simulação
 } MessageType;
 
+typedef struct {
+  int* fd_cliente;
+  char* file_eventos;
+} communication_thread_args;
+
 // Macro que recebe um communication type e transforma numa string
 #define string_from_com_type(TYPE) #TYPE
 #define xstring_from_com_type(TYPE) string_from_com_type(TYPE)
@@ -18,7 +24,7 @@ typedef enum MType {
   Summary: Recebe e interpreta mensagens do simulador.
   Esta interpretação passa por atualizar dados, escrever eventos, etc
 */
-void poll_and_interpret_client_messages(int* fd_cliente);
+void poll_and_interpret_client_messages(communication_thread_args *args);
 
 int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cliente);
 

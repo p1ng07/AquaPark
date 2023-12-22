@@ -10,14 +10,13 @@
 
 extern bool parque_aberto;
 
-extern pthread_t **global_user_thread_list;
+extern unsigned long *global_user_thread_list;
 
 // Entry point dos users
 // A informação recebida deve ser desalocada antes da terminação da thread
 void user_entry_point(user_entry_point_info* info){
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
   snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE -1, "%d", info->i);
-  printf("ID: %d", info->i);
 
   thread_send_message_to_socket(info->socket_monitor, ENTER, buffer);
 

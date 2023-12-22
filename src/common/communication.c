@@ -1,7 +1,9 @@
 #include "common.h"
 #include "communication.h"
+#include "../monitor/events.h"
 #include "string.h"
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -9,20 +11,23 @@
 #include <stdio.h>
 #include <unistd.h>
 
-void poll_and_interpret_client_messages(int* fd_cliente, int* event_file_descriptor) {
+// Thread de comunicação que lê as mensagens do simulador/users para serem interpretadas no monitor
+void poll_and_interpret_client_messages(communication_thread_args* args) {
   printf("Comecada thread para ler messagens.\n");
   // Ler mensagem vindo do simulador
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
 
+  FILE* file_eventos = fopen(args->file_eventos, "a");
+
   // TODO Adicionar um mecanismo para parar esta thread, provavelmente com
   // sinais
-  // Ideia: Receber um SIGUSRX que muda a variavel de controlo do while para false
-  int running = 1;
+  // Ideia: Receber um SIGUSRX que muda a variavel de controlo do while para
+  // false
 
-  while (running) {
+  while (1) {
 
     // Ler mensagem com MAX_MESSAGE_BUFFER_SIZE de tamanho
-    int n = readn(*fd_cliente, buffer, MAX_MESSAGE_BUFFER_SIZE);
+    int n = readn(*args->fd_cliente, buffer, MAX_MESSAGE_BUFFER_SIZE);
 
     if (n > 0) {
 
@@ -39,12 +44,15 @@ void poll_and_interpret_client_messages(int* fd_cliente, int* event_file_descrip
         printf("LOG: %s \n", buffer + 5);
       } else if (strncmp(buffer, "ERROR", 5) == 0) {
         printf("ERRO: %s \n", buffer + 5);
-      } else if (strncmp(buffer, "ENDSM", 5) == 0) {
-	// TODO Handle simulação acabou
-	running = 0;
       } else if (strncmp(buffer, "ENTER", 5) == 0) {
 	// User entrou no parque
 	int entered_user_id = atoi(message);
+
+	// Escrever uma linha para o ficheiro de eventos
+	char string[100];
+	snprintf(string, 100, "ENTER: User %d entrou no parque.\n", entered_user_id);
+	printf("%s", string);
+	fputs(string, file_eventos);
 
       }else{
 	fprintf(stderr, "Tipo de mensagem '%s' não está declarado para receber\n",
@@ -127,6 +135,7 @@ int readn(int fd, char *ptr, int nbytes)
 	return (nbytes - nleft);
 }
 
+// Envia uma mensagem para uma dada socket
 void send_message_to_socket(int*socket, MessageType type, char* message) {
   if(type == EVENT){
     char buffer[MAX_MESSAGE_BUFFER_SIZE] = "EVENT";

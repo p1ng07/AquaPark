@@ -15,6 +15,12 @@ typedef struct {
   bool is_man;
 } user_entry_point_info;
 
+/* Summary: Função onde um utilizador tenta entrar nas atraçòes
+   Returns: true se um acidente ocorreu e o user deve sair do parque,
+            false se um acidente não ocorreu
+ */
+bool try_enter_attractions(user_entry_point_info* info);
+
 void user_entry_point(user_entry_point_info* info);
 
 void send_message_to_socket(int*socket, MessageType type, char* message);
