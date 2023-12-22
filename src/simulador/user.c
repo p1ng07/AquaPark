@@ -35,9 +35,9 @@ void user_entry_point(user_entry_point_info* info){
   }
 
   // Sair do parque
-  snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE -1, "User %i saiu do parque", info->i);
+  snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE -1, "%i", info->i);
 
-  thread_send_message_to_socket(info->socket_monitor, EVENT, buffer);
+  thread_send_message_to_socket(info->socket_monitor, EXITU, buffer);
 
   free(info);
 }

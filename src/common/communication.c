@@ -44,13 +44,17 @@ void poll_and_interpret_client_messages(communication_thread_args* args) {
         printf("LOG: %s \n", buffer + 5);
       } else if (strncmp(buffer, "ERROR", 5) == 0) {
         printf("ERRO: %s \n", buffer + 5);
-      } else if (strncmp(buffer, "ENTER", 5) == 0) {
-	// User entrou no parque
-	int entered_user_id = atoi(message);
-
+      } else if (strncmp(buffer, "EXITU", 5) == 0) {
 	// Escrever uma linha para o ficheiro de eventos
 	char string[100];
-	snprintf(string, 100, "ENTER: User %d entrou no parque.\n", entered_user_id);
+	snprintf(string, 100, "EXIT: User %d saiu do parque.\n", atoi(message));
+	printf("%s", string);
+	fputs(string, file_eventos);
+
+      } else if (strncmp(buffer, "ENTER", 5) == 0) {
+	// Escrever uma linha para o ficheiro de eventos
+	char string[100];
+	snprintf(string, 100, "ENTER: User %d entrou no parque.\n", atoi(message));
 	printf("%s", string);
 	fputs(string, file_eventos);
 
@@ -159,6 +163,11 @@ void send_message_to_socket(int*socket, MessageType type, char* message) {
          MAX_MESSAGE_BUFFER_SIZE, 0);
   }else if (type == ENTER){
     char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ENTER";
+    send(*socket,
+	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+         MAX_MESSAGE_BUFFER_SIZE, 0);
+  }else if (type == EXITU){
+    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "EXITU";
     send(*socket,
 	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
          MAX_MESSAGE_BUFFER_SIZE, 0);

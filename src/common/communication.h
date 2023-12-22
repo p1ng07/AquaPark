@@ -6,9 +6,10 @@ typedef enum MType {
   EVENT,
   MESNG,
   ERROR,
-  ENTER, // Utilizador entrou no parque, formato: "ENTER id"
+  ENTER, // Utilizador entrou no parque, formato: "id"
   BEGIN, // Começar simulação
-  ENDSM  // Acabar simulação
+  ENDSM,  // Acabar simulação
+  EXITU, // Utilizador saiu do parque, formato: "id"
 } MessageType;
 
 typedef struct {
