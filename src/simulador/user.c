@@ -8,6 +8,8 @@
 #include <string.h>
 #include <sys/socket.h>
 
+extern bool parque_aberto;
+
 // Lock usado para que só uma thread esteja a enviar mensagens para o monitor
 pthread_mutex_t communication_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -27,9 +29,13 @@ void user_entry_point(user_entry_point_info* info){
 
   thread_send_message_to_socket(info->socket_monitor, EVENT, buffer);
 
-  // Fazer uma ação para simular um evento do utilizador
-  snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE -1, "Utilizador %i fez uma ação.", info->i);
-  thread_send_message_to_socket(info->socket_monitor, MESNG, buffer);
+  while(parque_aberto){};
+
+
+  // Sair do parque
+  snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE -1, "User %i saiu do parque", info->i);
+
+  thread_send_message_to_socket(info->socket_monitor, EVENT, buffer);
 
   free(info);
 }
