@@ -2,6 +2,8 @@
 #define COMMUNICATION_H
 
 #include <stdio.h>
+#include <stdbool.h>
+
 typedef enum MType {
   EVENT,
   MESNG,
@@ -13,7 +15,11 @@ typedef enum MType {
 } MessageType;
 
 typedef struct {
-  int entradas;
+  int entradas_parque;
+  int saidas_parque;
+  int desistencias;
+  int acidentes;
+  bool running_simulation; // Informa se a simulação está a decorrer ou não
 }stats_info;
 
 typedef struct {

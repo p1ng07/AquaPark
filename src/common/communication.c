@@ -17,8 +17,6 @@ void poll_and_interpret_client_messages(communication_thread_args* args) {
   // Ler mensagem vindo do simulador
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
 
-  args->stats->entradas = 69;
-
   FILE* file_eventos = fopen(args->file_eventos, "a");
 
   // TODO Adicionar um mecanismo para parar esta thread, provavelmente com
@@ -41,25 +39,26 @@ void poll_and_interpret_client_messages(communication_thread_args* args) {
 
       if (strncmp(buffer, "EVENT", 5) == 0) {
         // Evento, TODO escrever no ficheiro
-        printf("EVENTO: %s \n", buffer + 5);
+        /* printf("EVENTO: %s \n", buffer + 5); */
       } else if (strncmp(buffer, "MESNG", 5) == 0) {
-        printf("LOG: %s \n", buffer + 5);
+        /* printf("LOG: %s \n", buffer + 5); */
       } else if (strncmp(buffer, "ERROR", 5) == 0) {
         printf("ERRO: %s \n", buffer + 5);
+	args->stats->running_simulation = false;
       } else if (strncmp(buffer, "EXITU", 5) == 0) {
 	// Escrever uma linha para o ficheiro de eventos
 	char string[100];
 	snprintf(string, 100, "EXIT: User %d saiu do parque.\n", atoi(message));
-	printf("%s", string);
 	fputs(string, file_eventos);
 
+	args->stats->saidas_parque++;
       } else if (strncmp(buffer, "ENTER", 5) == 0) {
 	// Escrever uma linha para o ficheiro de eventos
 	char string[100];
 	snprintf(string, 100, "ENTER: User %d entrou no parque.\n", atoi(message));
-	printf("%s", string);
 	fputs(string, file_eventos);
 
+	args->stats->entradas_parque++;
       }else{
 	fprintf(stderr, "Tipo de mensagem '%s' não está declarado para receber\n",
 		identifier);

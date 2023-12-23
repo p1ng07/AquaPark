@@ -37,7 +37,11 @@ int main(int argc, char *argv[]) {
   pthread_t reading_thread;
 
   communication_thread_args* args = malloc(sizeof(communication_thread_args));
-  args->stats = malloc(sizeof(stats_info));
+
+  stats_info *stats = malloc(sizeof *stats);
+  *stats = (stats_info){0, 0, 0, 0, false};
+
+  args->stats = stats;
   args->fd_cliente = &fd_cliente;
   args->file_eventos = argv[2];
 
@@ -63,6 +67,8 @@ int main(int argc, char *argv[]) {
       {
 	char buffer[10];
 	send_message_to_socket(&fd_cliente, BEGIN, buffer);
+	menu_principal_running = false;
+	args->stats->running_simulation = true;
       }
       break;
     case 2:
@@ -76,14 +82,47 @@ int main(int argc, char *argv[]) {
     case 3:
       // Fechar simulação
       {
-	char buffer[10];
-	close(server_socket);
-	return 0;
+	menu_principal_running = false;
       }
       break;
     }
   }
 
+  // Mostrar stats enquanto a simulação está a correr
+
+  int pontinhos = 0;
+
+  while (args->stats->running_simulation) {
+    // Fazer o refresh a cada 0.5 segundos
+    printf("\033c");
+    printf("Desistências: %d\n", args->stats->desistencias);
+    printf("Utilizadores no parque: %d\n", args->stats->entradas_parque - args->stats->saidas_parque);
+    printf("Acidentes ocorridos: %d\n", args->stats->acidentes);
+    printf("Entradas totais: %d\n", args->stats->entradas_parque);
+    printf("Saidas ocorridos: %d\n", args->stats->saidas_parque);
+    printf("Estado: A Correr\n");
+    printf("------------------------------\n");
+
+    // Cena estúpida
+    for (int i = 0; i <= pontinhos; i++) {
+      printf(".");
+    }
+    pontinhos++;
+    pontinhos %= 3;
+
+    fflush(stdout);
+    usleep(5000);
+  }
+
+  // TOOD RETIRAR ISTO
+  /* printf("\033c"); */
+  printf("Entradas totais: %d\n", args->stats->entradas_parque);
+  printf("Desistências: %d\n", args->stats->desistencias);
+  printf("Acidentes ocorridos: %d\n", args->stats->acidentes);
+  printf("Estado: Acabada\n");
+
+  printf("Press ENTER to continue...");
+  scanf("");
 
   close(server_socket);
   fclose(file_eventos);
