@@ -13,8 +13,13 @@ typedef enum MType {
 } MessageType;
 
 typedef struct {
+  int entradas;
+}stats_info;
+
+typedef struct {
   int* fd_cliente;
   char* file_eventos;
+  stats_info* stats;
 } communication_thread_args;
 
 // Macro que recebe um communication type e transforma numa string

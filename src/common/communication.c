@@ -17,6 +17,8 @@ void poll_and_interpret_client_messages(communication_thread_args* args) {
   // Ler mensagem vindo do simulador
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
 
+  args->stats->entradas = 69;
+
   FILE* file_eventos = fopen(args->file_eventos, "a");
 
   // TODO Adicionar um mecanismo para parar esta thread, provavelmente com

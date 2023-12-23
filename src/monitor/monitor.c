@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
   pthread_t reading_thread;
 
   communication_thread_args* args = malloc(sizeof(communication_thread_args));
+  args->stats = malloc(sizeof(stats_info));
   args->fd_cliente = &fd_cliente;
   args->file_eventos = argv[2];
 
@@ -82,6 +83,7 @@ int main(int argc, char *argv[]) {
       break;
     }
   }
+
 
   close(server_socket);
   fclose(file_eventos);
