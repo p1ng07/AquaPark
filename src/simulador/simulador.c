@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 /*
   Summary: Espera pela mensagem de começo vinda do monitor, pode também receber
