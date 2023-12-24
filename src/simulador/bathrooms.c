@@ -18,6 +18,20 @@ pthread_mutex_t deficient_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 // sair da casa de banho sem ser interrompido
 sem_t user_done_sem, worker_done_sem;
 
+int slist_length(struct deficient_queue_head* head){
+
+  struct queue_item* curr = SLIST_FIRST(head);
+
+  int length = 0;
+
+  while (SLIST_NEXT(curr, entries) != NULL){
+    curr = SLIST_NEXT(curr, entries);
+    length++;
+  }
+
+  return length;
+}
+
 void insert_at_end_of_slist(struct deficient_queue_head* head, struct queue_item* entry){
 
   struct queue_item* curr = SLIST_FIRST(head);
@@ -65,14 +79,27 @@ void enter_bathrooms(user_info *info) {
     sem_wait(&entry->semaphore);
 
     sem_post(&user_done_sem);
-    printf("Utilizador %d saiu na casa de banho \n", info->i);
+    if (entry->quit){
+      // User desistiu da fila de espera
+      printf("Utilizador %d desistiu\n", entry->i);
+      printf("[");
+      struct queue_item *it = NULL;
+      SLIST_FOREACH(it, &deficient_restroom_queue, entries) {
+	if (it) {
+	  printf("%d,", it->i);
+	}
+      }
+      printf("]\n");
+    } else {
+      // User usou e saiu da casa de banho
+      printf("Utilizador %d saiu na casa de banho \n", info->i);
 
-    printf("[");
-    SLIST_FOREACH(it, &deficient_restroom_queue, entries) {
-      printf("%d,", it->i);
+      printf("[");
+      SLIST_FOREACH(it, &deficient_restroom_queue, entries) {
+	printf("%d,", it->i);
+      }
+      printf("]\n");
     }
-    printf("]\n");
-
     sem_destroy(&entry->semaphore);
     free(entry);
     sem_wait(&worker_done_sem);
@@ -109,26 +136,21 @@ void disabled_bathroom_worker_entry_point() {
 
       // Sempre que um utilizador sai na casa de banho, rolar uma chance de os
       // outros desistirem
-      // TODO Adicionar desistências
-      // Usar a sequência de user one wait e tal para fazer isso e retornar
-      // diretamente da função.
 
       struct queue_item *user = NULL;
       SLIST_FOREACH(user, &deficient_restroom_queue, entries) {
         if (user) {
           // TODO Adicionar chance de desistência a um parametro no ficheiro de
           // configuração
-          /* if (rand() % 10 < 5) { */
-          /*   printf("Utilizador %d desistiu\n", user->i); */
-          /*   SLIST_REMOVE(&deficient_restroom_queue, user, queue_item, entries); */
-          /*   user->quit = true; */
-          /*   sem_post(&user->semaphore); */
-	  /*   printf("["); */
-	  /*   SLIST_FOREACH(user, &deficient_restroom_queue, entries) { */
-	  /*     printf("%d,"user->i); */
-          /*   } */
-	  /*   printf("]"); */
-          /* } */
+	  // TODO Mudar a heuristica de desistência
+          if (rand() % 10 < 6 && slist_length(&deficient_restroom_queue) > 1) {
+            SLIST_REMOVE(&deficient_restroom_queue, user, queue_item, entries);
+            user->quit = true;
+            sem_post(&user->semaphore);
+
+	    sem_wait(&user_done_sem);
+	    sem_post(&worker_done_sem);
+          }
         }
       }
     }
