@@ -202,6 +202,11 @@ void send_message_to_socket(int*socket, MessageType type, char* message) {
     send(*socket,
 	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
          MAX_MESSAGE_BUFFER_SIZE, 0);
+  }else if (type == ACCID){
+    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ACCID";
+    send(*socket,
+	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+         MAX_MESSAGE_BUFFER_SIZE, 0);
   }else if (type == DESIS){
     char buffer[MAX_MESSAGE_BUFFER_SIZE] = "DESIS";
     send(*socket,

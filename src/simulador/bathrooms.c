@@ -141,11 +141,13 @@ void disabled_bathroom_worker_entry_point() {
 
     if (head != NULL) {
 
-      // TODO Adicionar acidentes aqui
-      // Ideia: Meter uma variável de estado na info do user, {RUNNING, QUIT,
-      // ACCIDENT} Que diz o que o user deve fazer assim que sair de uma
-      // atração.
+      // Fazer com que o user utilize a atração
       SLIST_REMOVE_HEAD(&deficient_restroom_queue, entries);
+      
+      // Chance de 1 em 500 de haver um acidente
+      if (rand() % 1000 == 0){
+	head->left_state = ACCIDENT;
+      }
       sem_post(&head->semaphore);
       
       sem_wait(&user_done_sem);

@@ -30,8 +30,6 @@ void user_entry_point(user_info* info){
 
     bool accident = try_enter_attractions(info);
     if (accident){
-      snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
-      thread_send_message_to_socket(info->socket_monitor, ACCID, buffer);
       break;
     }
   };
