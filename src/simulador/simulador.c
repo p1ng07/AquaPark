@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
 
   // Criacao de threads
   for (int i = 0; i < num_users_inicial->i; i++) {
-    user_entry_point_info *info_send = malloc(sizeof(user_entry_point_info));
+    user_info *info_send = malloc(sizeof(user_info));
     info_send->socket_monitor = allocated_client_socket;
     info_send->i = counter_id_user++;
     global_user_counter++;
@@ -109,10 +109,12 @@ int main(int argc, char* argv[]) {
     info_send->is_man = rand() < (float)RAND_MAX * 0.50;
 
     // Idade pode ir dos 10 aos 70
-    info_send->idade = (rand() % 70) + 10;
+    info_send->age = (rand() % 70) + 10;
 
     pthread_create(&global_user_thread_list[i], NULL,(void*)user_entry_point,info_send);
     info_send->pthread_info = global_user_thread_list[i];
+
+    sleep(1);
   }
 
   printf("Esperando\n");
