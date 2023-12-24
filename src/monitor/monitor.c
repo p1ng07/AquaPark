@@ -36,7 +36,8 @@ int main(int argc, char *argv[]) {
   // Lançar uma thread para lidar com messagens do simulador
   pthread_t reading_thread;
 
-  communication_thread_args* args = malloc(sizeof(communication_thread_args));
+  //-Estatísticas a partilhar com a thread de comunicação------------------
+  communication_thread_args *args = malloc(sizeof(communication_thread_args));
 
   stats_info *stats = malloc(sizeof *stats);
   *stats = (stats_info){.acidentes = 0,
@@ -52,6 +53,7 @@ int main(int argc, char *argv[]) {
   int* allocated_fd_cliente = malloc(sizeof(int));
   *allocated_fd_cliente = fd_cliente;
   pthread_create(&reading_thread,0, (void*)poll_and_interpret_client_messages, args);
+  //----------------------------------------------------------------------
 
   bool menu_principal_running = true;
 
@@ -122,9 +124,6 @@ int main(int argc, char *argv[]) {
   printf("Desistências: %d\n", args->stats->desistencias);
   printf("Acidentes ocorridos: %d\n", args->stats->acidentes);
   printf("Estado: Acabada\n");
-
-  printf("Press ENTER to continue...");
-  scanf("");
 
   close(server_socket);
   fclose(file_eventos);
