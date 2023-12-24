@@ -25,8 +25,15 @@ void user_entry_point(user_info* info){
 
   // TODO Handle if park is closed (simple queue)
 
-  while(parque_aberto && !try_enter_attractions(info)){
+  while(parque_aberto){
     // Fazendo coisas dentro do parque
+
+    bool accident = try_enter_attractions(info);
+    if (accident){
+      snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
+      thread_send_message_to_socket(info->socket_monitor, ACCID, buffer);
+      break;
+    }
   };
 
   // Cleanup de sair do parque (libertar a entry deste user na lista global de threads no simulador.c, fazendo espaço para novos utilizadores)
@@ -50,7 +57,6 @@ bool try_enter_attractions(user_info *info) {
 
   // Escolher um número de 0 a 5, no caso de um adulto, e de 0 a 6 no caso de uma criança
   int attraction = rand() % ((info->age > 12) ? 5 : 6);
-  /* int attraction = 4; */
 
   switch (attraction) {
   case 0: {
@@ -67,7 +73,7 @@ bool try_enter_attractions(user_info *info) {
   } break;
   case 4: {
     // TODO casas de banho
-    enter_bathrooms(info);
+    return enter_bathrooms(info);
   } break;
   case 5: {
     // Piscina das crianças

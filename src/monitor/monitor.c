@@ -59,8 +59,6 @@ int main(int argc, char *argv[]) {
     printf("1 - Iniciar simulação\n");
     printf("2 - Limpar ficheiro de eventos\n");
     printf("3 - Terminar simulação\n");
-    // TODO: Adicionar opcoes de passar horas quando a simulação está a
-    // correr
     printf("Opcao: ");
 
     int input_choice = get_menu_input(0, 4);

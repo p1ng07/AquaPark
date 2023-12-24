@@ -95,13 +95,14 @@ int main(int argc, char* argv[]) {
   pthread_t deficient_bathroom_worker_thread ;
   pthread_create(&deficient_bathroom_worker_thread, NULL,
 		 (void*)disabled_bathroom_worker_entry_point, NULL);
-  // Certificar-se que a thread é criada
-  /* assert(disabled_bathroom_created == 0); */
 
   int* allocated_client_socket = malloc(sizeof(int));
   *allocated_client_socket = client_socket;
 
-  // TODO Adicionar hora local de inicio de simulação, horas para cada diversão estar aberta, e mudar "parque_aberto" consoante as horas, qualquer o intervalo de cada hora com base num parametro de hora_inicial hora_final e tempo_de_simulação
+  // TODO Adicionar hora local de inicio de simulação, horas para cada diversão
+  // estar aberta, e mudar "parque_aberto" consoante as horas, qualquer o
+  // intervalo de cada hora com base num parametro de hora_inicial hora_final e
+  // tempo_de_simulação
 
   // Contador que se usa para criar um id única para cada utilizador
   int counter_id_user = 0;
