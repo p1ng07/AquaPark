@@ -72,16 +72,13 @@ bool try_enter_attractions(user_info *info) {
   } break;
   }
 
-  if (attraction == 0){
-    // Tobogo
-  }
-
   // TODO Sempre que um user estiver numa atração, deve rolar uma chance de ele ter um acidente e ter de sair do parque, returnando true nesta função
   return false;
 }
 
 // Lock usado para que só uma thread esteja a enviar mensagens para o monitor
 pthread_mutex_t communication_lock = PTHREAD_MUTEX_INITIALIZER;
+
 
 void thread_send_message_to_socket(int *socket, MessageType type,
 			    char *message) {

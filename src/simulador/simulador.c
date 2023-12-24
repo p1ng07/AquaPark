@@ -3,6 +3,7 @@
 #include "../common/communication.h"
 #include "../common/common.h"
 #include "../common/string.h"
+#include "bathrooms.h"
 #include "print.h"
 #include "user.h"
 #include <assert.h>
@@ -41,7 +42,7 @@ void wait_for_begin_message(int socket) {
   }
 }
 
-bool parque_aberto = false;
+bool parque_aberto = true;
 
   // Contador que mantém o número atual de utilizadores no parque
 int global_user_counter = 0;
@@ -90,6 +91,13 @@ int main(int argc, char* argv[]) {
   // Esperar por uma mensagem de começo
   wait_for_begin_message(client_socket);
 
+  // Criar worker threads para as atrações que precisam delas
+  pthread_t deficient_bathroom_worker_thread ;
+  pthread_create(&deficient_bathroom_worker_thread, NULL,
+		 (void*)disabled_bathroom_worker_entry_point, NULL);
+  // Certificar-se que a thread é criada
+  /* assert(disabled_bathroom_created == 0); */
+
   int* allocated_client_socket = malloc(sizeof(int));
   *allocated_client_socket = client_socket;
 
@@ -105,7 +113,8 @@ int main(int argc, char* argv[]) {
     info_send->i = counter_id_user++;
     global_user_counter++;
 
-    info_send->deficient = rand() < (float)RAND_MAX * 0.19f;
+    /* info_send->deficient = rand() < (float)RAND_MAX * 0.19f; */
+    info_send->deficient = true;
     info_send->is_man = rand() < (float)RAND_MAX * 0.50;
 
     // Idade pode ir dos 10 aos 70
@@ -114,10 +123,13 @@ int main(int argc, char* argv[]) {
     pthread_create(&global_user_thread_list[i], NULL,(void*)user_entry_point,info_send);
     info_send->pthread_info = global_user_thread_list[i];
 
-    sleep(1);
+    /* sleep(1); */
   }
 
   printf("Esperando\n");
+
+  sleep(3);
+  parque_aberto = false;
 
   // Esperar que threads acabem
   for (int i = 0; i < MAX_THREADS; i++) {
