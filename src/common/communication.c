@@ -58,6 +58,13 @@ void poll_and_interpret_client_messages(communication_thread_args* args) {
 	fputs(string, file_eventos);
 
 	args->stats->entradas_parque++;
+      } else if (strncmp(buffer, "ACCID", 5) == 0) {
+	// User teve um acidente
+	char string[100];
+	snprintf(string, 100, "Acidente: User %d teve um acidente.\n", atoi(message));
+	fputs(string, file_eventos);
+	args->stats->acidentes++;
+
       } else if (strncmp(buffer, "DESIS", 5) == 0) {
 	// User desisitiu de uma fila de espera
 	char string[100];

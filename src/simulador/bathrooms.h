@@ -5,14 +5,45 @@
 #include <semaphore.h>
 #include <sys/queue.h>
 
+// Estado que indica o que o utilizador deve fazer assim que sair da atração
+typedef enum {
+  RUNNING, // User deve continuar dentro do parque
+  QUIT, // User desistiu da sua fila de espera
+  ACCIDENT, // User teve um acidente e tem que sair do parque
+}user_state ;
+
+// Item que representa uma utilizador numa fila de espera fifo
 struct queue_item {
-  sem_t semaphore;
-  bool quit; // Indica se um utilizador deve desistir da fila de espera ou não
-  SLIST_ENTRY(queue_item) entries;
+  sem_t semaphore;       // Semáforo que faz o utilizador esperar a sua vez
+  user_state left_state; // Esta variável indica o que o utilizador
+			 // deve fazer assim que sair de uma atração
+  SLIST_ENTRY(queue_item)
+  entries; // Entrada da lista ligada que representa a fila de espera
 };
 
-void enter_bathrooms(user_info *info);
+/* Summary: O user tenta entrar na sua casa de banho respetiva.
+   Vai para a lista de espera respetiva e espera que o processo "worker" da
+   casa de banho o faça avançar.
 
+   As filas de espera das casas de banho:
+   - Não tem prioridades.
+   - Tem desistências justas (sempre que um user entra na atração, é rolada uma
+   chance para cada user desistir da fila de espera caso esta tenha 2 ou mais
+   users).
+
+   @Returns:
+   True, se ocorreu um acidente e o user deve sair do parque de diversões
+   False, se não ocorreu um acidente (o user usou a atração ou desistiu da fila
+   de espera) e deve continuar no parque
+ */
+bool enter_bathrooms(user_info *info);
+
+/* Summary: Entry point para o worker da casa de banho de deficientes.
+   O worker vai trabalhar (libertar users na fila de espera) enquanto o parque
+   estiver aberto.
+   Assim que o parque fechar (controlado pela variável global parque_aberto),
+   todos os utilizadores (por ordem da fila) desistem da fila de espera
+ */
 void disabled_bathroom_worker_entry_point();
 
 #endif

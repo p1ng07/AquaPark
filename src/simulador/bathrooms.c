@@ -1,5 +1,6 @@
 #include "bathrooms.h"
 #include "../common/common.h"
+#include <assert.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdlib.h>
@@ -49,16 +50,20 @@ void insert_at_end_of_slist(struct deficient_queue_head* head, struct queue_item
   SLIST_INSERT_AFTER(curr, entry, entries);
 }
 
-void enter_bathrooms(user_info *info) {
+bool enter_bathrooms(user_info *info) {
+
+  // Determina se houve um acidente
+  bool accident = false;
+
   if (info->deficient) {
 
     pthread_mutex_lock(&deficient_queue_mutex);
 
     // Criar entrada deste user na lista de espera da casa de banho
     struct queue_item *entry = malloc(sizeof(struct queue_item));
-    entry->quit = false;
     sem_init(&entry->semaphore, 0, 0);
     entry->entries.sle_next = NULL;
+    entry->left_state = RUNNING;
 
     insert_at_end_of_slist(&deficient_restroom_queue, entry);
 
@@ -73,31 +78,52 @@ void enter_bathrooms(user_info *info) {
     // Esperar pela vez do utilizador para entrar no parque
     sem_wait(&entry->semaphore);
 
-    // Lock duplo para que só um utilizador esteja a sair da casa de banho num determinado instante
+    // Lock duplo para que só um utilizador esteja a sair da casa de banho num
+    // determinado instante
     sem_post(&user_done_sem);
-    if (entry->quit) {
-      // User desistiu da fila de espera
-      char buffer[MAX_MESSAGE_BUFFER_SIZE];
-      snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
 
-      thread_send_message_to_socket(info->socket_monitor, DESIS, buffer);
-    } else {
+    // Determinar o que fazer assim que o utilizador saia da atração
+    switch (entry->left_state) {
+    case RUNNING: {
       // User usou e saiu da casa de banho
       char buffer[MAX_MESSAGE_BUFFER_SIZE];
       snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
 
       thread_send_message_to_socket(info->socket_monitor, EXWCD, buffer);
+    } break;
+    case QUIT: {
+      // User desistiu da fila de espera
+      char buffer[MAX_MESSAGE_BUFFER_SIZE];
+      snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
+
+      thread_send_message_to_socket(info->socket_monitor, DESIS, buffer);
+    } break;
+    case ACCIDENT: {
+      // TODO Isto talvez seja uma má decisão, tentar tirar isto daqui, nã̀o perdendo
+      // o "realismo" de entrar primeiro numa casa de banho, depois ter um
+      // acidente
+      // User teve um acidente e tem que sair do parque
+      char buffer[MAX_MESSAGE_BUFFER_SIZE];
+      snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
+      thread_send_message_to_socket(info->socket_monitor, ACCID, buffer);
+      accident = true;
+    } break;
+    default:
+      assert(false);
+      break;
     }
     sem_destroy(&entry->semaphore);
     free(entry);
     sem_wait(&worker_done_sem);
 
-    return;
   } else if (info->is_man) {
-    // Casas de banho duplas de homens
+    // TODO Casas de banho duplas de homens
+    // Tentar usar ao máximo o que já foi feito
   } else if (!info->is_man) {
     // Casas de banho duplas de mulheres
   }
+
+  return accident;
 }
 
 void disabled_bathroom_worker_entry_point() {
@@ -115,6 +141,10 @@ void disabled_bathroom_worker_entry_point() {
 
     if (head != NULL) {
 
+      // TODO Adicionar acidentes aqui
+      // Ideia: Meter uma variável de estado na info do user, {RUNNING, QUIT,
+      // ACCIDENT} Que diz o que o user deve fazer assim que sair de uma
+      // atração.
       SLIST_REMOVE_HEAD(&deficient_restroom_queue, entries);
       sem_post(&head->semaphore);
       
@@ -132,7 +162,7 @@ void disabled_bathroom_worker_entry_point() {
 	  // TODO Mudar a heuristica de desistência
           if (rand() % 20 == 0 && slist_length(&deficient_restroom_queue) > 1) {
             SLIST_REMOVE(&deficient_restroom_queue, user, queue_item, entries);
-            user->quit = true;
+	    user->left_state = QUIT;
             sem_post(&user->semaphore);
 
 	    sem_wait(&user_done_sem);
@@ -149,7 +179,7 @@ void disabled_bathroom_worker_entry_point() {
 
   // Libertar todos os utilizadores na fila de espera quando o parque fecha
   SLIST_FOREACH(user, &deficient_restroom_queue, entries) {
-    user->quit = true;
+    user->left_state = QUIT;
     sem_post(&user->semaphore);
     
     sem_wait(&user_done_sem);

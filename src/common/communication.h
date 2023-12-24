@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-// O "formato" de cada mensagem especifica que informação é enviada depois do
-// identificador
+// O "formato" de cada mensagem especifica que informação é enviada no buffer
+// depois do identificador
 typedef enum MType {
   EVENT,
   MESNG,
@@ -14,6 +14,8 @@ typedef enum MType {
   BEGIN, // Começar simulação
   ENDSM, // Acabar simulação
   EXITU, // Utilizador saiu do parque, formato: "id"
+
+  ACCID, // Ocorreu um acidente
 
   DESIS, // User desistiu da sua fila de espera
 
