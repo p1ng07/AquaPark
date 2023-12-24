@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
     global_user_counter++;
 
     /* info_send->deficient = rand() < (float)RAND_MAX * 0.19f; */
-    info_send->deficient = true;
+    info_send->deficient = rand() < (float)RAND_MAX * 0.19f;
     info_send->is_man = rand() < (float)RAND_MAX * 0.50;
 
     // Idade pode ir dos 10 aos 70
@@ -122,13 +122,9 @@ int main(int argc, char* argv[]) {
 
     pthread_create(&global_user_thread_list[i], NULL,(void*)user_entry_point,info_send);
     info_send->pthread_info = global_user_thread_list[i];
-
-    /* sleep(1); */
   }
 
-  printf("Esperando\n");
-
-  sleep(3);
+  sleep(4);
   parque_aberto = false;
 
   // Esperar que threads acabem

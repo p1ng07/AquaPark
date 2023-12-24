@@ -2,6 +2,7 @@
 #include "../common/common.h"
 #include "../common/communication.h"
 #include "bathrooms.h"
+#include <assert.h>
 #include <bits/pthreadtypes.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -71,6 +72,10 @@ bool try_enter_attractions(user_info *info) {
   case 5: {
     // Piscina das crianças
   } break;
+  default: {
+    assert(0);
+    break;
+  }
   }
 
   // TODO Sempre que um user estiver numa atração, deve rolar uma chance de ele ter um acidente e ter de sair do parque, returnando true nesta função

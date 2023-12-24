@@ -4,14 +4,21 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+// O "formato" de cada mensagem especifica que informação é enviada depois do
+// identificador
 typedef enum MType {
   EVENT,
   MESNG,
   ERROR,
   ENTER, // Utilizador entrou no parque, formato: "id"
   BEGIN, // Começar simulação
-  ENDSM,  // Acabar simulação
+  ENDSM, // Acabar simulação
   EXITU, // Utilizador saiu do parque, formato: "id"
+
+  DESIS, // User desistiu da sua fila de espera
+
+  ENWCD, // User entrou na wc de deficientes, formato: "id"
+  EXWCD, // User saiu da wc de deficientes, formato: "id"
 } MessageType;
 
 typedef struct {

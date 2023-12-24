@@ -54,56 +54,43 @@ void enter_bathrooms(user_info *info) {
 
     pthread_mutex_lock(&deficient_queue_mutex);
 
+    // Criar entrada deste user na lista de espera da casa de banho
     struct queue_item *entry = malloc(sizeof(struct queue_item));
-
     entry->quit = false;
-    entry->i = info->i;
     sem_init(&entry->semaphore, 0, 0);
     entry->entries.sle_next = NULL;
 
     insert_at_end_of_slist(&deficient_restroom_queue, entry);
 
-    // TODO add a message to monitor here
-    printf("Utilizador %d entrou na casa de banho\n", info->i);
+    // Mensagem de entrada de user na casa de banho
+    char buffer[MAX_MESSAGE_BUFFER_SIZE];
+    snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
 
-    struct queue_item *it = NULL;
-    printf("[");
-    SLIST_FOREACH(it, &deficient_restroom_queue, entries) {
-      printf("%d,", it->i);
-    }
-    printf("]\n");
+    thread_send_message_to_socket(info->socket_monitor, ENWCD, buffer);
 
     pthread_mutex_unlock(&deficient_queue_mutex);
 
     // Esperar pela vez do utilizador para entrar no parque
     sem_wait(&entry->semaphore);
 
+    // Lock duplo para que só um utilizador esteja a sair da casa de banho num determinado instante
     sem_post(&user_done_sem);
-    if (entry->quit){
+    if (entry->quit) {
       // User desistiu da fila de espera
-      printf("Utilizador %d desistiu\n", entry->i);
-      printf("[");
-      struct queue_item *it = NULL;
-      SLIST_FOREACH(it, &deficient_restroom_queue, entries) {
-	if (it) {
-	  printf("%d,", it->i);
-	}
-      }
-      printf("]\n");
+      char buffer[MAX_MESSAGE_BUFFER_SIZE];
+      snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
+
+      thread_send_message_to_socket(info->socket_monitor, DESIS, buffer);
     } else {
       // User usou e saiu da casa de banho
-      printf("Utilizador %d saiu na casa de banho \n", info->i);
+      char buffer[MAX_MESSAGE_BUFFER_SIZE];
+      snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
 
-      printf("[");
-      SLIST_FOREACH(it, &deficient_restroom_queue, entries) {
-	printf("%d,", it->i);
-      }
-      printf("]\n");
+      thread_send_message_to_socket(info->socket_monitor, EXWCD, buffer);
     }
     sem_destroy(&entry->semaphore);
     free(entry);
     sem_wait(&worker_done_sem);
-
 
     return;
   } else if (info->is_man) {
@@ -143,7 +130,7 @@ void disabled_bathroom_worker_entry_point() {
           // TODO Adicionar chance de desistência a um parametro no ficheiro de
           // configuração
 	  // TODO Mudar a heuristica de desistência
-          if (rand() % 10 < 6 && slist_length(&deficient_restroom_queue) > 1) {
+          if (rand() % 20 == 0 && slist_length(&deficient_restroom_queue) > 1) {
             SLIST_REMOVE(&deficient_restroom_queue, user, queue_item, entries);
             user->quit = true;
             sem_post(&user->semaphore);
@@ -161,10 +148,13 @@ void disabled_bathroom_worker_entry_point() {
   struct queue_item *user;
 
   // Libertar todos os utilizadores na fila de espera quando o parque fecha
-  pthread_mutex_lock(&deficient_queue_mutex);
   SLIST_FOREACH(user, &deficient_restroom_queue, entries) {
     user->quit = true;
     sem_post(&user->semaphore);
+    
+    sem_wait(&user_done_sem);
+    sem_post(&worker_done_sem);
   }
-  pthread_mutex_unlock(&deficient_queue_mutex);
+
+  printf("Worker thread de casas de batho saiu");
 }

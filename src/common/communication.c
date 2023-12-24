@@ -13,8 +13,7 @@
 
 // Thread de comunicação que lê as mensagens do simulador/users para serem interpretadas no monitor
 void poll_and_interpret_client_messages(communication_thread_args* args) {
-  printf("Comecada thread para ler messagens.\n");
-  // Ler mensagem vindo do simulador
+  // Ler mensagem vinda do simulador
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
 
   FILE* file_eventos = fopen(args->file_eventos, "a");
@@ -59,6 +58,25 @@ void poll_and_interpret_client_messages(communication_thread_args* args) {
 	fputs(string, file_eventos);
 
 	args->stats->entradas_parque++;
+      } else if (strncmp(buffer, "DESIS", 5) == 0) {
+	// User desisitiu de uma fila de espera
+	char string[100];
+	snprintf(string, 100, "Desistência: User %d desistiu da sua fila de espera.\n", atoi(message));
+	fputs(string, file_eventos);
+	args->stats->desistencias++;
+
+      } else if (strncmp(buffer, "ENWCD", 5) == 0) {
+	// User saiu da casa de banho dos deficientes
+	char string[100];
+	snprintf(string, 100, "WC def: User %d entrou.\n", atoi(message));
+	fputs(string, file_eventos);
+
+      } else if (strncmp(buffer, "EXWCD", 5) == 0) {
+	// User saiu da casa de banho dos deficientes
+	char string[100];
+	snprintf(string, 100, "WC def: User %d usou e saiu.\n", atoi(message));
+	fputs(string, file_eventos);
+	
       }else{
 	fprintf(stderr, "Tipo de mensagem '%s' não está declarado para receber\n",
 		identifier);
@@ -174,6 +192,21 @@ void send_message_to_socket(int*socket, MessageType type, char* message) {
          MAX_MESSAGE_BUFFER_SIZE, 0);
   }else if (type == ENDSM){
     char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ENDSM";
+    send(*socket,
+	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+         MAX_MESSAGE_BUFFER_SIZE, 0);
+  }else if (type == DESIS){
+    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "DESIS";
+    send(*socket,
+	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+         MAX_MESSAGE_BUFFER_SIZE, 0);
+  }else if (type == ENWCD){
+    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ENWCD";
+    send(*socket,
+	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+         MAX_MESSAGE_BUFFER_SIZE, 0);
+  }else if (type == EXWCD){
+    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "EXWCD";
     send(*socket,
 	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
          MAX_MESSAGE_BUFFER_SIZE, 0);

@@ -39,7 +39,11 @@ int main(int argc, char *argv[]) {
   communication_thread_args* args = malloc(sizeof(communication_thread_args));
 
   stats_info *stats = malloc(sizeof *stats);
-  *stats = (stats_info){0, 0, 0, 0, false};
+  *stats = (stats_info){.acidentes = 0,
+			.desistencias = 0,
+			.entradas_parque = 0,
+			.saidas_parque = 0,
+			.running_simulation = false};
 
   args->stats = stats;
   args->fd_cliente = &fd_cliente;

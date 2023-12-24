@@ -7,7 +7,6 @@
 
 struct queue_item {
   sem_t semaphore;
-  int i;
   bool quit; // Indica se um utilizador deve desistir da fila de espera ou não
   SLIST_ENTRY(queue_item) entries;
 };
