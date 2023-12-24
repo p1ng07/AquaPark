@@ -99,7 +99,6 @@ conf_parameter *read_parameter_from_line(char *line) {
   return param;
 };
 
-// TODO Melhorar isto, de momento todas as linhas não vazias são parametros
 int get_num_of_configuration_parameters_in_file(FILE* iter){
   int count = 0;
   int t = getc(iter);
