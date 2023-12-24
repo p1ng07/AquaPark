@@ -1,4 +1,5 @@
 #include "bathrooms.h"
+#include "slist.h"
 #include "../common/common.h"
 #include <assert.h>
 #include <pthread.h>
@@ -9,8 +10,7 @@
 extern bool parque_aberto;
 
 // Lista de espera para a casa de banho dos deficientes
-SLIST_HEAD(deficient_queue_head, queue_item)
-deficient_restroom_queue = SLIST_HEAD_INITIALIZER(deficient_restroom_queue);
+struct queue_head deficient_restroom_queue = SLIST_HEAD_INITIALIZER(deficient_restroom_queue);
 
 // Controla que só um user pode estar a entrar ou sair da casa de banho
 pthread_mutex_t deficient_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -18,37 +18,6 @@ pthread_mutex_t deficient_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
  // Age como um trinco duplo, para que um utilizador possa
 // sair da casa de banho sem ser interrompido
 sem_t user_done_sem, worker_done_sem;
-
-int slist_length(struct deficient_queue_head* head){
-
-  struct queue_item* curr = SLIST_FIRST(head);
-
-  int length = 0;
-
-  while (SLIST_NEXT(curr, entries) != NULL){
-    curr = SLIST_NEXT(curr, entries);
-    length++;
-  }
-
-  return length;
-}
-
-void insert_at_end_of_slist(struct deficient_queue_head* head, struct queue_item* entry){
-
-  struct queue_item* curr = SLIST_FIRST(head);
-
-  if (curr == NULL) {
-    // Lista está vazia, inserir nova head
-    SLIST_INSERT_HEAD(head, entry, entries);
-    return;
-  }
-
-  while (SLIST_NEXT(curr, entries) != NULL){
-    curr = SLIST_NEXT(curr, entries);
-  }
-
-  SLIST_INSERT_AFTER(curr, entry, entries);
-}
 
 bool enter_bathrooms(user_info *info) {
 

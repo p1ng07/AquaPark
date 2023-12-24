@@ -12,15 +12,6 @@ typedef enum {
   ACCIDENT, // User teve um acidente e tem que sair do parque
 }user_state ;
 
-// Item que representa uma utilizador numa fila de espera fifo
-struct queue_item {
-  sem_t semaphore;       // Semáforo que faz o utilizador esperar a sua vez
-  user_state left_state; // Esta variável indica o que o utilizador
-			 // deve fazer assim que sair de uma atração
-  SLIST_ENTRY(queue_item)
-  entries; // Entrada da lista ligada que representa a fila de espera
-};
-
 /* Summary: O user tenta entrar na sua casa de banho respetiva.
    Vai para a lista de espera respetiva e espera que o processo "worker" da
    casa de banho o faça avançar.
