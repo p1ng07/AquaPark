@@ -49,6 +49,7 @@ bool try_enter_attractions(user_info *info) {
 
   // Escolher um número de 0 a 5, no caso de um adulto, e de 0 a 6 no caso de uma criança
   int attraction = rand() % ((info->age > 12) ? 5 : 6);
+  /* int attraction = 4; */
 
   switch (attraction) {
   case 0: {
