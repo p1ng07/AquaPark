@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+// Teste
+
 /*
   Summary: Espera pela mensagem de começo vinda do monitor, pode também receber
   uma mensagem para fechar a simulação
