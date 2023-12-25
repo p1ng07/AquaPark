@@ -4,6 +4,7 @@
 #include "user.h"
 #include <semaphore.h>
 #include <sys/queue.h>
+#include <stdbool.h>
 
 // Estado que indica o que o utilizador deve fazer assim que sair da atração
 typedef enum {
@@ -36,5 +37,15 @@ bool enter_bathrooms(user_info *info);
    todos os utilizadores (por ordem da fila) desistem da fila de espera
  */
 void disabled_bathroom_worker_entry_point();
+
+/* Summary: Tenta entrar na casa de banho dos deficientes
+
+   entry: Objeto que representa o user numa determinada fila de espera
+   info: Informação sobre o user corrente
+
+   @Returns: True, se houve um acidente
+             False, se não houve acidente
+*/
+bool disabled_wc(user_info *info);
 
 #endif
