@@ -113,7 +113,7 @@ void disabled_bathroom_worker_entry_point() {
       // Fazer com que o user utilize a atração
       SLIST_REMOVE_HEAD(&deficient_restroom_queue, entries);
       
-      // Chance de 1 em 500 de haver um acidente
+      // Chance de 1 em 1000 de haver um acidente
       if (rand() % 1000 == 0){
 	head->left_state = ACCIDENT;
       }

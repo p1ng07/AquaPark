@@ -7,12 +7,11 @@
 // O "formato" de cada mensagem especifica que informação é enviada no buffer
 // depois do identificador
 typedef enum MType {
-  EVENT,
-  MESNG,
   ERROR,
   ENTER, // Utilizador entrou no parque, formato: "id"
   BEGIN, // Começar simulação
   ENDSM, // Acabar simulação
+  TESTE,
   EXITU, // Utilizador saiu do parque, formato: "id"
 
   ACCID, // Ocorreu um acidente
@@ -55,7 +54,7 @@ int readn(int fd, char *ptr, int nbytes);
 
 /*
   Summary: Envia uma mensagem com um certo identificador para uma socket
-  AVISO: O tamanho da mensagem deve ser <= MAX_MESSAGE_BUFFER_SIZE - 5
+  AVISO: O tamanho da mensagem deve ser <= MAX_MESSAGE_BUFFER_SIZE - 1
 */
 void send_message_to_socket(int*socket, MessageType type, char* message);
 

@@ -29,12 +29,12 @@ void wait_for_begin_message(int socket) {
   while (1) {
     // Ler mensagem com MAX_MESSAGE_BUFFER_SIZE de tamanho
     int n = readn(socket, buffer, MAX_MESSAGE_BUFFER_SIZE);
-    // Ler código identificador do tipo de mensagem (primeiras 5 letras da
-    // mensagem)
+    // Ler código identificador do tipo de mensagem (primeiro carater da mensagem)
+    int identifier = buffer[0];
 
-    if (strncmp(buffer, "BEGIN", 5) == 0) {
+    if (identifier == BEGIN) {
       break;
-    }else if (strncmp(buffer, "ENDSM", 5) == 0){
+    }else if (identifier == ENDSM){
       printf("Ordem de monitor: Terminar simulação.");
       exit(0);
       break;

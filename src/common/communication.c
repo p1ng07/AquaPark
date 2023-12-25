@@ -12,11 +12,12 @@
 #include <unistd.h>
 
 // Thread de comunicação que lê as mensagens do simulador/users para serem interpretadas no monitor
-void poll_and_interpret_client_messages(communication_thread_args* args) {
+void poll_and_interpret_client_messages(communication_thread_args *args) {
   // Ler mensagem vinda do simulador
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
+#define IDENTIFIER_LENGTH 1
 
-  FILE* file_eventos = fopen(args->file_eventos, "a");
+  FILE *file_eventos = fopen(args->file_eventos, "a");
 
   // TODO Adicionar um mecanismo para parar esta thread, provavelmente com
   // sinais
@@ -24,70 +25,87 @@ void poll_and_interpret_client_messages(communication_thread_args* args) {
   // false
 
   while (1) {
-
     // Ler mensagem com MAX_MESSAGE_BUFFER_SIZE de tamanho
     int n = readn(*args->fd_cliente, buffer, MAX_MESSAGE_BUFFER_SIZE);
 
     if (n > 0) {
 
-      // Os primeiros 5 carateres sao o identificador da mensagem
       char message[MAX_MESSAGE_BUFFER_SIZE];
-      strncpy(message, buffer + 5, MAX_MESSAGE_BUFFER_SIZE - 5);
-      char identifier[5];
-      strncpy(identifier, buffer, 5);
+      strncpy(message, buffer + IDENTIFIER_LENGTH, MAX_MESSAGE_BUFFER_SIZE - IDENTIFIER_LENGTH);
 
-      if (strncmp(buffer, "EVENT", 5) == 0) {
-        // Evento, TODO escrever no ficheiro
-        /* printf("EVENTO: %s \n", buffer + 5); */
-      } else if (strncmp(buffer, "MESNG", 5) == 0) {
-        /* printf("LOG: %s \n", buffer + 5); */
-      } else if (strncmp(buffer, "ERROR", 5) == 0) {
-        printf("ERRO: %s \n", buffer + 5);
-	args->stats->running_simulation = false;
-      } else if (strncmp(buffer, "EXITU", 5) == 0) {
-	// Escrever uma linha para o ficheiro de eventos
-	char string[100];
-	snprintf(string, 100, "EXIT: User %d saiu do parque.\n", atoi(message));
-	fputs(string, file_eventos);
+      // O primeiro carater é o identificador da mensagem
+      int identifier = -1;
+      identifier = buffer[0];
 
-	args->stats->saidas_parque++;
-      } else if (strncmp(buffer, "ENTER", 5) == 0) {
-	// Escrever uma linha para o ficheiro de eventos
-	char string[100];
-	snprintf(string, 100, "ENTER: User %d entrou no parque.\n", atoi(message));
-	fputs(string, file_eventos);
+      switch (identifier) {
+      case ERROR:
+        printf("ERROR: %s \n", buffer + IDENTIFIER_LENGTH);
+        args->stats->running_simulation = false;
+        break;
 
-	args->stats->entradas_parque++;
-      } else if (strncmp(buffer, "ACCID", 5) == 0) {
-	// User teve um acidente
-	char string[100];
-	snprintf(string, 100, "Acidente: User %d teve um acidente.\n", atoi(message));
-	fputs(string, file_eventos);
-	args->stats->acidentes++;
+      case EXITU: {
+        // Write a line to the event file
+        char string[100];
+        snprintf(string, 100, "EXIT: User %d exited the park.\n",
+                 atoi(message));
+        fputs(string, file_eventos);
+        args->stats->saidas_parque++;
+        break;
+      }
 
-      } else if (strncmp(buffer, "DESIS", 5) == 0) {
-	// User desisitiu de uma fila de espera
-	char string[100];
-	snprintf(string, 100, "Desistência: User %d desistiu da sua fila de espera.\n", atoi(message));
-	fputs(string, file_eventos);
-	args->stats->desistencias++;
+      case ENTER: {
+        // Write a line to the event file
+        char string[100];
+        snprintf(string, 100, "ENTER: User %d entered the park.\n",
+                 atoi(message));
+        fputs(string, file_eventos);
+        args->stats->entradas_parque++;
+        break;
+      }
 
-      } else if (strncmp(buffer, "ENWCD", 5) == 0) {
-	// User saiu da casa de banho dos deficientes
-	char string[100];
-	snprintf(string, 100, "WC def: User %d entrou.\n", atoi(message));
-	fputs(string, file_eventos);
+      case ACCID: {
+        // User had an accident
+        char string[100];
+        snprintf(string, 100, "Accident: User %d had an accident.\n",
+                 atoi(message));
+        fputs(string, file_eventos);
+        args->stats->acidentes++;
+        break;
+      }
 
-      } else if (strncmp(buffer, "EXWCD", 5) == 0) {
-	// User saiu da casa de banho dos deficientes
-	char string[100];
-	snprintf(string, 100, "WC def: User %d usou e saiu.\n", atoi(message));
-	fputs(string, file_eventos);
-	
-      }else{
-	fprintf(stderr, "Tipo de mensagem '%s' não está declarado para receber\n",
-		identifier);
-	assert(0);
+      case DESIS: {
+        // User abandoned a waiting queue
+        char string[100];
+        snprintf(string, 100,
+                 "Abandonment: User %d abandoned their waiting queue.\n",
+                 atoi(message));
+        fputs(string, file_eventos);
+        args->stats->desistencias++;
+        break;
+      }
+
+      case ENWCD: {
+        // User entered the disabled bathroom
+        char string[100];
+        snprintf(string, 100, "Disabled WC: User %d entered.\n", atoi(message));
+        fputs(string, file_eventos);
+        break;
+      }
+
+      case EXWCD: {
+        // User exited the disabled bathroom
+        char string[100];
+        snprintf(string, 100, "Disabled WC: User %d used and exited.\n",
+                 atoi(message));
+        fputs(string, file_eventos);
+        break;
+      }
+
+      default:
+        fprintf(stderr, "Message type '%d' is not defined to be received.\n",
+                identifier);
+        assert(0);
+        break;
       }
     }
   }
@@ -167,63 +185,7 @@ int readn(int fd, char *ptr, int nbytes)
 
 // Envia uma mensagem para uma dada socket
 void send_message_to_socket(int*socket, MessageType type, char* message) {
-  if(type == EVENT){
-    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "EVENT";
-    send(*socket,
-	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
-         MAX_MESSAGE_BUFFER_SIZE, 0);
-  }else if(type == MESNG){
-    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "MESNG";
-    send(*socket,
-	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
-         MAX_MESSAGE_BUFFER_SIZE, 0);
-  }else if (type == ERROR){
-    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ERROR";
-    send(*socket,
-	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
-         MAX_MESSAGE_BUFFER_SIZE, 0);
-  }else if (type == BEGIN){
-    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "BEGIN";
-    send(*socket,
-	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
-         MAX_MESSAGE_BUFFER_SIZE, 0);
-  }else if (type == ENTER){
-    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ENTER";
-    send(*socket,
-	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
-         MAX_MESSAGE_BUFFER_SIZE, 0);
-  }else if (type == EXITU){
-    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "EXITU";
-    send(*socket,
-	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
-         MAX_MESSAGE_BUFFER_SIZE, 0);
-  }else if (type == ENDSM){
-    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ENDSM";
-    send(*socket,
-	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
-         MAX_MESSAGE_BUFFER_SIZE, 0);
-  }else if (type == ACCID){
-    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ACCID";
-    send(*socket,
-	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
-         MAX_MESSAGE_BUFFER_SIZE, 0);
-  }else if (type == DESIS){
-    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "DESIS";
-    send(*socket,
-	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
-         MAX_MESSAGE_BUFFER_SIZE, 0);
-  }else if (type == ENWCD){
-    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "ENWCD";
-    send(*socket,
-	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
-         MAX_MESSAGE_BUFFER_SIZE, 0);
-  }else if (type == EXWCD){
-    char buffer[MAX_MESSAGE_BUFFER_SIZE] = "EXWCD";
-    send(*socket,
-	 strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
-         MAX_MESSAGE_BUFFER_SIZE, 0);
-  }else{
-    fprintf(stderr,"Tipo de mensagem '%i' não está declarado para envio\n", type);
-    assert(0);
-  }
+  char buffer[MAX_MESSAGE_BUFFER_SIZE] = {type};
+  send(*socket, strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
+       MAX_MESSAGE_BUFFER_SIZE, 0);
 }
