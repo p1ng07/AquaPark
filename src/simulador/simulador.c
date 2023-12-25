@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  send_message_to_socket(&client_socket, ERROR, "Simulador fechou.");
+  send_message_to_socket(&client_socket, ENDSM, "");
 
   return 0;
 }

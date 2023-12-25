@@ -1,17 +1,17 @@
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
 
 // O "formato" de cada mensagem especifica que informação é enviada no buffer
 // depois do identificador
 typedef enum MType {
-  ERROR,
+  ERROR, // Ocorreu um erro fatal, fechar monitor e simulação
   ENTER, // Utilizador entrou no parque, formato: "id"
   BEGIN, // Começar simulação
   ENDSM, // Acabar simulação
-  TESTE,
   EXITU, // Utilizador saiu do parque, formato: "id"
 
   ACCID, // Ocorreu um acidente
@@ -23,10 +23,10 @@ typedef enum MType {
 } MessageType;
 
 typedef struct {
-  int entradas_parque;
-  int saidas_parque;
-  int desistencias;
-  int acidentes;
+  uint64_t entradas_parque;
+  uint64_t saidas_parque;
+  uint64_t desistencias;
+  uint64_t acidentes;
   bool running_simulation; // Informa se a simulação está a decorrer ou não
 }stats_info;
 

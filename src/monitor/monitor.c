@@ -99,11 +99,11 @@ int main(int argc, char *argv[]) {
   while (args->stats->running_simulation) {
     // Fazer o refresh a cada 0.5 segundos
     printf("\033c");
-    printf("Desistências: %d\n", args->stats->desistencias);
-    printf("Utilizadores no parque: %d\n", args->stats->entradas_parque - args->stats->saidas_parque);
-    printf("Acidentes ocorridos: %d\n", args->stats->acidentes);
-    printf("Entradas totais: %d\n", args->stats->entradas_parque);
-    printf("Saidas ocorridos: %d\n", args->stats->saidas_parque);
+    printf("Desistências: %ld\n", args->stats->desistencias);
+    printf("Utilizadores no parque: %ld\n", args->stats->entradas_parque - args->stats->saidas_parque);
+    printf("Acidentes ocorridos: %ld\n", args->stats->acidentes);
+    printf("Entradas totais: %ld\n", args->stats->entradas_parque);
+    printf("Saidas ocorridos: %ld\n", args->stats->saidas_parque);
     printf("Estado: A Correr\n");
     printf("------------------------------\n");
 
@@ -120,9 +120,9 @@ int main(int argc, char *argv[]) {
 
   // TOOD RETIRAR ISTO
   /* printf("\033c"); */
-  printf("Entradas totais: %d\n", args->stats->entradas_parque);
-  printf("Desistências: %d\n", args->stats->desistencias);
-  printf("Acidentes ocorridos: %d\n", args->stats->acidentes);
+  printf("Entradas totais: %ld\n", args->stats->entradas_parque);
+  printf("Desistências: %ld\n", args->stats->desistencias);
+  printf("Acidentes ocorridos: %ld\n", args->stats->acidentes);
   printf("Estado: Acabada\n");
 
   close(server_socket);

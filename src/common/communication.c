@@ -38,8 +38,8 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
       identifier = buffer[0];
 
       switch (identifier) {
-      case ERROR:
-        printf("ERROR: %s \n", buffer + IDENTIFIER_LENGTH);
+      case ENDSM:
+        fputs("Simulação fechou \n", file_eventos);
         args->stats->running_simulation = false;
         break;
 
@@ -100,7 +100,14 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
         fputs(string, file_eventos);
         break;
       }
+      case ERROR: {
+	printf("\n------------------------------------\n");
+	printf("\nOCORREU UM ERRO FATAL\n");
+	printf("\nERRO: %s", message);
+	printf("\n------------------------------------\n");
 
+	args->stats->running_simulation = false;
+      }
       default:
         fprintf(stderr, "Message type '%d' is not defined to be received.\n",
                 identifier);
