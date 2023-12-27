@@ -122,13 +122,14 @@ bool disabled_wc(user_info *info) {
 
   pthread_mutex_unlock(&deficient_queue_mutex);
 
-  // Esperar pela vez do utilizador para entrar na atração
-  sem_wait(&entry->semaphore);
 
   // Mensagem de entrada de user na casa de banho dos deficientes
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
   snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
   thread_send_message_to_socket(info->socket_monitor, ENWCD, buffer);
+
+  // Esperar pela vez do utilizador para entrar na atração
+  sem_wait(&entry->semaphore);
 
   // Lock duplo para que só um utilizador esteja a sair da casa de banho num
   // determinado instante
@@ -201,8 +202,9 @@ void men_bathroom_worker_entry_point() {
 
     // Não libertar pessoas da fila se existem mais que duas pessoas nas casas
     // de banho
-    if (number_of_people_in_men_bahrooms >= LIMIT_PEOPLE_IN_MEN_BATHROOMS)
+    if (number_of_people_in_men_bahrooms >= LIMIT_PEOPLE_IN_MEN_BATHROOMS){
       continue;
+    }
 
     pthread_mutex_lock(&men_queue_mutex);
     // Tentar libertar primeiro a lista dos vips antes de deixar os outros
@@ -317,13 +319,13 @@ bool men_wc(user_info *info) {
 
   pthread_mutex_unlock(&men_queue_mutex);
 
-  // Esperar pela vez do utilizador para entrar na atração
-  sem_wait(&entry->semaphore);
-
   // Mensagem de entrada de user na casa de banho dos menes
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
   snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
   thread_send_message_to_socket(info->socket_monitor, ENWCH, buffer);
+
+  // Esperar pela vez do utilizador para entrar na atração
+  sem_wait(&entry->semaphore);
 
   // Lock duplo para que só um utilizador esteja a sair da casa de banho num
   // determinado instante
@@ -397,8 +399,9 @@ void women_bathroom_worker_entry_point() {
 
     // Não libertar pessoas da fila se existem mais que duas pessoas nas casas
     // de banho
-    if (number_of_people_in_women_bahrooms >= LIMIT_PEOPLE_IN_WOMEN_BATHROOMS)
+    if (number_of_people_in_women_bahrooms >= LIMIT_PEOPLE_IN_WOMEN_BATHROOMS){
       continue;
+    }
 
     pthread_mutex_lock(&women_queue_mutex);
     // Tentar libertar primeiro a lista dos vips antes de deixar os outros
@@ -520,14 +523,14 @@ bool women_wc(user_info *info) {
   // Esperar pela vez do utilizador para entrar na atração
   sem_wait(&entry->semaphore);
 
-  // Lock duplo para que só um utilizador esteja a sair da casa de banho num
-  // determinado instante
-  sem_post(&user_done_women_sem);
-
   // Mensagem de entrada de user na casa de banho dos menes
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
   snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);
   thread_send_message_to_socket(info->socket_monitor, ENWCW, buffer);
+
+  // Lock duplo para que só um utilizador esteja a sair da casa de banho num
+  // determinado instante
+  sem_post(&user_done_women_sem);
 
   // Todos os 3 tipos de mensagens que podem ser enviadas, vão enviar o id
   snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d", info->i);

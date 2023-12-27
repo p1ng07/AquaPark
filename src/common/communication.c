@@ -91,7 +91,7 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
         // User entered the women bathroom
         char string[100];
 
-        snprintf(string, 100, "WOMEN WC: User %d entered.\n", atoi(message));
+        snprintf(string, 100, "WOMEN WC: User %d entered waiting queue.\n", atoi(message));
         fputs(string, file_eventos);
         break;
       }
@@ -109,7 +109,7 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
         // User entered the disabled bathroom
         char string[100];
 
-        snprintf(string, 100, "MEN WC: User %d entered.\n", atoi(message));
+        snprintf(string, 100, "MEN WC: User %d entered waiting queue.\n", atoi(message));
         fputs(string, file_eventos);
         break;
       }
@@ -126,7 +126,7 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
       case ENWCD: {
         // User entered the men bathroom
         char string[100];
-        snprintf(string, 100, "Disabled WC: User %d entered.\n",
+        snprintf(string, 100, "Disabled WC: User %d entered waiting queue.\n",
                  atoi(message));
         fputs(string, file_eventos);
         break;
