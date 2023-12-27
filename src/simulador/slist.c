@@ -1,4 +1,5 @@
 #include "slist.h"
+#include <stdio.h>
 
 int slist_length(struct queue_head* head){
 
@@ -12,7 +13,7 @@ int slist_length(struct queue_head* head){
   while (SLIST_NEXT(curr, entries) != NULL) {
     curr = SLIST_NEXT(curr, entries);
     length++;
-  }
+  };
 
   return length;
 }
@@ -27,9 +28,9 @@ void insert_at_end_of_slist(struct queue_head* head, struct queue_item* entry){
     return;
   }
 
-  while (SLIST_NEXT(curr, entries) != NULL){
+  while (SLIST_NEXT(curr, entries) != NULL) {
     curr = SLIST_NEXT(curr, entries);
-  }
+  };
 
   SLIST_INSERT_AFTER(curr, entry, entries);
 }

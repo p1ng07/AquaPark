@@ -1,9 +1,6 @@
 #ifndef USER_H
 #define USER_H
 
-#include <pthread.h>
-#include <stdbool.h>
-#include <bits/pthreadtypes.h>
 #include "../common/communication.h"
 
 typedef struct {
@@ -31,5 +28,7 @@ void send_message_to_socket(int*socket, MessageType type, char* message);
 void thread_send_message_to_socket(int *socket, MessageType type, char *message);
 
 bool is_vip(user_info* info);
+
+void exit_park(user_info* info);
 
 #endif

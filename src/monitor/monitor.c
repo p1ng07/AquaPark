@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
       }
       break;
     }
-  }
+  };
 
   // Mostrar stats enquanto a simulação está a correr
 
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
 
     fflush(stdout);
     usleep(5000);
-  }
+  };
 
   // TOOD RETIRAR ISTO
   /* printf("\033c"); */

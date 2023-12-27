@@ -1,20 +1,22 @@
-#include "common.h"
 #include "communication.h"
 #include "../monitor/events.h"
+#include "common.h"
 #include "string.h"
 #include <assert.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <stdio.h>
 #include <unistd.h>
 
-// Thread de comunicação que lê as mensagens do simulador/users para serem interpretadas no monitor
+// Thread de comunicação que lê as mensagens do simulador/users para serem
+// interpretadas no monitor
 void poll_and_interpret_client_messages(communication_thread_args *args) {
   // Ler mensagem vinda do simulador
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
+
 #define IDENTIFIER_LENGTH 1
 
   FILE *file_eventos = fopen(args->file_eventos, "a");
@@ -31,7 +33,8 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
     if (n > 0) {
 
       char message[MAX_MESSAGE_BUFFER_SIZE];
-      strncpy(message, buffer + IDENTIFIER_LENGTH, MAX_MESSAGE_BUFFER_SIZE - IDENTIFIER_LENGTH);
+      strncpy(message, buffer + IDENTIFIER_LENGTH,
+              MAX_MESSAGE_BUFFER_SIZE - IDENTIFIER_LENGTH);
 
       // O primeiro carater é o identificador da mensagem
       int identifier = -1;
@@ -84,6 +87,24 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
         break;
       }
 
+      case ENWCW: {
+        // User entered the women bathroom
+        char string[100];
+
+        snprintf(string, 100, "WOMEN WC: User %d entered.\n", atoi(message));
+        fputs(string, file_eventos);
+        break;
+      }
+
+      case EXWCW: {
+        // User exited the women bathroom
+        char string[100];
+        snprintf(string, 100, "WOMEN WC: User %d used and exited.\n",
+                 atoi(message));
+        fputs(string, file_eventos);
+        break;
+      }
+
       case ENWCH: {
         // User entered the disabled bathroom
         char string[100];
@@ -94,7 +115,7 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
       }
 
       case EXWCH: {
-        // User exited the disabled bathroom
+        // User exited the men bathroom
         char string[100];
         snprintf(string, 100, "MEN WC: User %d used and exited.\n",
                  atoi(message));
@@ -103,9 +124,10 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
       }
 
       case ENWCD: {
-        // User entered the disabled bathroom
+        // User entered the men bathroom
         char string[100];
-        snprintf(string, 100, "Disabled WC: User %d entered queue.\n", atoi(message));
+        snprintf(string, 100, "Disabled WC: User %d entered.\n",
+                 atoi(message));
         fputs(string, file_eventos);
         break;
       }
@@ -119,12 +141,12 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
         break;
       }
       case ERROR: {
-	printf("\n------------------------------------\n");
-	printf("\nOCORREU UM ERRO FATAL\n");
-	printf("\nERRO: %s", message);
-	printf("\n------------------------------------\n");
+        printf("\n------------------------------------\n");
+        printf("\nOCORREU UM ERRO FATAL\n");
+        printf("\nERRO: %s", message);
+        printf("\n------------------------------------\n");
 
-	args->stats->running_simulation = false;
+        args->stats->running_simulation = false;
       }
       default:
         fprintf(stderr, "Message type '%d' is not defined to be received.\n",
@@ -133,14 +155,16 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
         break;
       }
     }
-  }
+  };
 }
 
 /*
   Summary: Cria uma socket e espera por uma conexao do servidor
-  Returns: Socket criada e file descriptor da socket do cliente atraves dos parametros
+  Returns: Socket criada e file descriptor da socket do cliente atraves dos
+  parametros
  */
-int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cliente){
+int create_socket_and_wait_for_client_connection(int *server_socket,
+                                                 int *fd_cliente) {
   int len;
   // Socket
   struct sockaddr_un saun;
@@ -177,39 +201,38 @@ int create_socket_and_wait_for_client_connection(int* server_socket, int* fd_cli
   }
 
   // Bloqueia até receber uma conexao de um cliente
-  if ((*fd_cliente = accept(*server_socket, (struct sockaddr *) &saun, (socklen_t*)&len)) < 0) {
+  if ((*fd_cliente = accept(*server_socket, (struct sockaddr *)&saun,
+                            (socklen_t *)&len)) < 0) {
     perror("server: accept");
     return 1;
   }
 
   printf("Recebida conexão do simulador\n");
-  
+
   return 0;
 }
 
 /* Lê nbytes de um ficheiro/socket.
    Bloqueia até conseguir ler os nbytes ou dar erro */
-int readn(int fd, char *ptr, int nbytes)
-{
-	int nleft, nread;
+int readn(int fd, char *ptr, int nbytes) {
+  int nleft, nread;
 
-	nleft = nbytes;
-	while (nleft > 0)
-	{
-		nread = read(fd, ptr, nleft);
-		if (nread < 0)
-			return (nread);
-		else if (nread == 0)
-			break;
+  nleft = nbytes;
+  while (nleft > 0) {
+    nread = read(fd, ptr, nleft);
+    if (nread < 0)
+      return (nread);
+    else if (nread == 0)
+      break;
 
-		nleft -= nread;
-		ptr += nread;
-	}
-	return (nbytes - nleft);
+    nleft -= nread;
+    ptr += nread;
+  }
+  return (nbytes - nleft);
 }
 
 // Envia uma mensagem para uma dada socket
-void send_message_to_socket(int*socket, MessageType type, char* message) {
+void send_message_to_socket(int *socket, MessageType type, char *message) {
   char buffer[MAX_MESSAGE_BUFFER_SIZE] = {type};
   send(*socket, strncat(buffer, message, MAX_MESSAGE_BUFFER_SIZE - 1),
        MAX_MESSAGE_BUFFER_SIZE, 0);

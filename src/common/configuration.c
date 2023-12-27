@@ -51,7 +51,7 @@ configuration extract_config_from_file(char* file_path){
     }else{
       free(heap_allocated_line);
     }
-  }
+  };
 
   fclose(fptr);
   return conf;

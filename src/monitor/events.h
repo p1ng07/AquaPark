@@ -18,6 +18,6 @@
     printf(__VA_ARGS__);                                                       \
     printf("\n");                                                              \
     fputs(buffer, file);                                                       \
-  } while (0)
+  } while (0);
 
 #endif

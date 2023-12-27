@@ -2,7 +2,6 @@
 #define COMMUNICATION_H
 
 #include <stdint.h>
-#include <stdio.h>
 #include <stdbool.h>
 
 // O "formato" de cada mensagem especifica que informação é enviada no buffer
@@ -23,6 +22,9 @@ typedef enum MType {
 
   ENWCH, // User entrou na wc de homens, formato: "id"
   EXWCH, // User saiu da wc de homens, formato: "id"
+
+  ENWCW, // User entrou na wc de mulheres, formato: "id"
+  EXWCW, // User saiu da wc de mulheres, formato: "id"
 } MessageType;
 
 typedef struct {

@@ -56,7 +56,7 @@ bool disabled_wc(user_info *info);
 */
 bool men_wc(user_info* info);
 
-/* Summary: Entry point para o worker da casa de banho de deficientes.
+/* Summary: Entry point para o worker da casa de banho dos homens
    O worker vai trabalhar (libertar users na fila de espera) enquanto o parque
    estiver aberto.
    Podem estar duas pessoas ao mesmo tempo nas casas de banho
@@ -65,4 +65,23 @@ bool men_wc(user_info* info);
    todos os utilizadores (por ordem da fila) desistem da fila de espera
  */
 void men_bathroom_worker_entry_point();
+
+/* Summary: Tenta entrar na casa de banho das mulheres
+
+   info: Informação sobre o user corrente
+
+   @Returns: True, se houve um acidente
+             False, se não houve acidente
+*/
+bool women_wc(user_info* info);
+
+/* Summary: Entry point para o worker da casa de banho das mulheres
+   O worker vai trabalhar (libertar users na fila de espera) enquanto o parque
+   estiver aberto.
+   Podem estar duas pessoas ao mesmo tempo nas casas de banho
+   As casas de banho respeitam prioridades (tenta libertar todos os vips antes de libertar pessoas normais)
+   Assim que o parque fechar (controlado pela variável global parque_aberto),
+   todos os utilizadores (por ordem da fila) desistem da fila de espera
+ */
+void women_bathroom_worker_entry_point();
 #endif
