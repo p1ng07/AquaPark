@@ -48,10 +48,7 @@ bool parque_aberto = true;
 int global_user_counter = 0;
 
 unsigned long *global_user_thread_list = NULL;
-
-void cleanup_thread_list(int thread_index){
-  global_user_thread_list[thread_index] = 0;
-}
+pthread_mutex_t global_user_thread_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main(int argc, char* argv[]) {
 
@@ -123,7 +120,6 @@ int main(int argc, char* argv[]) {
     user_info *info_send = malloc(sizeof(user_info));
     info_send->socket_monitor = allocated_client_socket;
     info_send->i = counter_id_user++;
-    global_user_counter++;
 
     info_send->deficient = rand() < (float)RAND_MAX * 0.19f;
     info_send->is_man = rand() < (float)RAND_MAX * 0.50;
@@ -131,11 +127,46 @@ int main(int argc, char* argv[]) {
     // Idade pode ir dos 10 aos 80
     info_send->age = (rand() % 80) + 10;
 
-    pthread_create(&global_user_thread_list[info_send->i], NULL,(void*)user_entry_point,info_send);
-    info_send->pthread_info = global_user_thread_list[info_send->i];
+    pthread_create(&global_user_thread_list[i], NULL,(void*)user_entry_point,info_send);
+    info_send->pthread_info = global_user_thread_list[i];
   }
 
   sleep(4);
+
+  time_t atual = 0;
+  time_t inicio = 0;
+  time(&inicio);
+
+  do {
+
+  pthread_mutex_lock(&global_user_thread_list_mutex);
+    for (int i = 0; i < MAX_THREADS; i++){
+      // Chance de 50% de tentar criar um user novo no parque
+      if(rand() % 2 == 0)
+	break;
+
+      if(global_user_thread_list[i] == 0){
+	user_info *info_send = malloc(sizeof(user_info));
+	info_send->socket_monitor = allocated_client_socket;
+        info_send->i = counter_id_user++;
+
+        info_send->deficient = rand() < (float)RAND_MAX * 0.19f;
+        info_send->is_man = rand() < (float)RAND_MAX * 0.50;
+
+        // Idade pode ir dos 10 aos 80
+        info_send->age = (rand() % 80) + 10;
+
+        pthread_create(&global_user_thread_list[i], NULL,
+                       (void *)user_entry_point, info_send);
+        info_send->pthread_info = global_user_thread_list[i];
+	break;
+      }
+    }
+    pthread_mutex_unlock(&global_user_thread_list_mutex);
+
+    time(&atual);
+  } while (difftime(atual, inicio) < 7);
+
   parque_aberto = false;
 
 
