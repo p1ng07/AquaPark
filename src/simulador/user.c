@@ -13,13 +13,19 @@
 
 extern bool parque_aberto;
 
+extern pthread_mutex_t global_user_thread_list_mutex;
+
 extern unsigned long *global_user_thread_list;
 
 void exit_park(user_info* info){
+  pthread_mutex_lock(&global_user_thread_list_mutex);
   for (int i = 0; i < MAX_THREADS; i++) {
-    if (info->pthread_info == global_user_thread_list[i])
+
+    if (info->pthread_info == global_user_thread_list[i]){
       global_user_thread_list[i] = 0;
+    }
   };
+  pthread_mutex_unlock(&global_user_thread_list_mutex);
 
   // Sair do parque
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
