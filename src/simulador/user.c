@@ -47,7 +47,7 @@ void user_entry_point(user_info* info){
 
   thread_send_message_to_socket(info->socket_monitor, EXITU, buffer);
 
-  free(info);
+  /* free(info); */
 }
 
 bool try_enter_attractions(user_info *info) {

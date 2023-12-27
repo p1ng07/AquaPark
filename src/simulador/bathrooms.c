@@ -199,11 +199,8 @@ void men_bathroom_worker_entry_point() {
 
     // Não libertar pessoas da fila se existem mais que duas pessoas nas casas
     // de banho
-    if (number_of_people_in_men_bahrooms >= LIMIT_PEOPLE_IN_MEN_BATHROOMS) {
-      printf("AS CASAS DE BANHO ESTão CHEIAS\n");
+    if (number_of_people_in_men_bahrooms >= LIMIT_PEOPLE_IN_MEN_BATHROOMS)
       continue;
-    } else {
-    }
 
     pthread_mutex_lock(&men_queue_mutex);
     // Tentar libertar primeiro a lista dos vips antes de deixar os outros

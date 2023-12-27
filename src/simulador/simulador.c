@@ -122,7 +122,6 @@ int main(int argc, char* argv[]) {
     info_send->i = counter_id_user++;
     global_user_counter++;
 
-    /* info_send->deficient = rand() < (float)RAND_MAX * 0.19f; */
     info_send->deficient = rand() < (float)RAND_MAX * 0.19f;
     info_send->is_man = rand() < (float)RAND_MAX * 0.50;
 
@@ -135,14 +134,18 @@ int main(int argc, char* argv[]) {
 
   sleep(4);
   parque_aberto = false;
-  printf("PARQUE FECHOU\n");
+
+  /* pthread_join(men_bathroom_worker_thread_1, NULL); */
+  /* pthread_join(men_bathroom_worker_thread_2, NULL); */
+  /* pthread_join(deficient_bathroom_worker_thread, NULL); */
 
   // Esperar que threads acabem
-  for (int i = 0; i < MAX_THREADS; i++) {
-    if (global_user_thread_list[i] != 0){
-	pthread_join(global_user_thread_list[i], NULL);
-    }
-  }
+  /* for (int i = 0; i < MAX_THREADS; i++) { */
+  /*   if (global_user_thread_list[i] != 0){ */
+  /* 	pthread_join(global_user_thread_list[i], NULL); */
+  /*   } */
+  /* } */
+
 
   send_message_to_socket(&client_socket, ENDSM, "");
 
