@@ -17,14 +17,21 @@ typedef enum MType {
 
   DESIS, // User desistiu da sua fila de espera
 
-  ENWCD, // User entrou na wc de deficientes, formato: "id"
+  ENWCD, // User entrou na wc de deficientes, formato: "id,vip", vip = 1
+         // signifca que user que entrou é vip
   EXWCD, // User saiu da wc de deficientes, formato: "id"
 
-  ENWCH, // User entrou na wc de homens, formato: "id"
+  ENWCH, // User entrou na wc de homens, formato: "id,vip", vip = 1
+         // signifca que user que entrou é vip
   EXWCH, // User saiu da wc de homens, formato: "id"
 
-  ENWCW, // User entrou na wc de mulheres, formato: "id"
+  ENWCW, // User entrou na wc de mulheres, formato: "id,vip", vip = 1
+         // signifca que user que entrou é vip
   EXWCW, // User saiu da wc de mulheres, formato: "id"
+
+  ENTBP, // User entrou no tobogan pequeno, formato: "id", vip = 1
+         // signifca que user que entrou é vip
+  EXTBP, // User saiu no tobogan pequeno, formato: "id"
 } MessageType;
 
 typedef struct {

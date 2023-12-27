@@ -141,6 +141,43 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
         fputs(string, file_eventos);
         break;
       }
+
+      case ENTBP: {
+        // User entered tobogan pequeno
+        char string[100];
+	int id = atoi(strtok(message, ","));
+	bool vip = (bool)atoi(strtok(NULL, ","));
+
+	if (vip){
+	  snprintf(string, 100,
+		   "Tobogan pequeno: VIP User %d entered waiting queue.\n", id);
+        }else{
+	  snprintf(string, 100,
+		   "Tobogan pequeno: User %d entered waiting queue.\n",
+		   id);
+	}
+
+        fputs(string, file_eventos);
+        break;
+      }
+
+      case EXTBP: {
+        // User exited the disabled bathroom
+        char string[100];
+	int id = atoi(strtok(message, ","));
+	bool vip = (bool)atoi(strtok(NULL, ","));
+
+	if (vip) {
+          snprintf(string, 100,
+                   "Tobogan pequeno: VIP User %d used and exited.\n", id);
+        } else {
+	  snprintf(string, 100, "Tobogan pequeno: User %d used and exited.\n",
+		   id);
+        }
+
+        fputs(string, file_eventos);
+        break;
+      }
       case ERROR: {
         printf("\n------------------------------------\n");
         printf("\nOCORREU UM ERRO FATAL\n");

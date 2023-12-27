@@ -12,6 +12,14 @@ typedef struct {
   bool is_man;
 } user_info;
 
+
+// Estado que indica o que o utilizador deve fazer assim que sair da atração
+typedef enum {
+  RUNNING, // User deve continuar dentro do parque
+  QUIT, // User desistiu da sua fila de espera
+  ACCIDENT, // User teve um acidente e tem que sair do parque
+}user_state ;
+
 /* Summary: Função onde um utilizador tenta entrar nas atraçòes
    Returns: true, se um acidente ocorreu e o user deve sair do parque,
             false, se um acidente não ocorreu e o user deve continuar no parque

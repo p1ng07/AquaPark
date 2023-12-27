@@ -209,11 +209,12 @@ void men_bathroom_worker_entry_point() {
 
     // Tentar libertar primeiro a lista dos vips antes de deixar os outros
     // passarem
-    struct queue_item *head = SLIST_FIRST(&men_restroom_vip_queue);
+    struct queue_item *head = NULL;
 
-    if (head) {
+    if (!SLIST_EMPTY(&men_restroom_vip_queue)) {
+      head = SLIST_FIRST(&men_restroom_vip_queue);
       SLIST_REMOVE_HEAD(&men_restroom_vip_queue, entries);
-    } else if (SLIST_FIRST(&men_restroom_queue) != NULL) {
+    } else if (!SLIST_EMPTY(&men_restroom_queue)) {
       head = SLIST_FIRST(&men_restroom_queue);
       SLIST_REMOVE_HEAD(&men_restroom_queue, entries);
     }
@@ -245,33 +246,37 @@ void men_bathroom_worker_entry_point() {
       // Rola uma chance para que, individualmente, todos os utilizadores
       // desistam das filas de espera
       pthread_mutex_lock(&men_queue_mutex);
-      SLIST_FOREACH(user, &men_restroom_queue, entries) {
-        if (!user)
-          continue;
+      if (!(SLIST_EMPTY(&men_restroom_queue))){
+        SLIST_FOREACH(user, &men_restroom_queue, entries) {
+          if (!user)
+            continue;
 
-        if (rand() % 20 == 0 && SLIST_FIRST(&men_restroom_queue) != NULL) {
-          SLIST_REMOVE(&men_restroom_queue, user, queue_item, entries);
-          user->left_state = QUIT;
-          sem_post(&user->semaphore);
+          if (rand() % 20 == 0 && user != NULL) {
+            SLIST_REMOVE(&men_restroom_queue, user, queue_item, entries);
+            user->left_state = QUIT;
+            sem_post(&user->semaphore);
 
-          sem_wait(&user_done_men_sem);
-          sem_post(&worker_done_men_sem);
+            sem_wait(&user_done_men_sem);
+            sem_post(&worker_done_men_sem);
+          }
         }
       }
 
       user = NULL;
-      SLIST_FOREACH(user, &men_restroom_vip_queue, entries) {
-        if (!user)
-          continue;
+      if (!(SLIST_EMPTY(&men_restroom_vip_queue))){
+	SLIST_FOREACH(user, &men_restroom_vip_queue, entries) {
+	  if (!user)
+	    continue;
 
-        if (rand() % 20 == 0 && SLIST_FIRST(&men_restroom_vip_queue) != NULL) {
-          SLIST_REMOVE(&men_restroom_vip_queue, user, queue_item, entries);
-          user->left_state = QUIT;
-          sem_post(&user->semaphore);
+          if (rand() % 20 == 0 && user != NULL) {
+            SLIST_REMOVE(&men_restroom_vip_queue, user, queue_item, entries);
+            user->left_state = QUIT;
+            sem_post(&user->semaphore);
 
-          sem_wait(&user_done_men_sem);
-	  sem_post(&worker_done_men_sem);
-	}
+            sem_wait(&user_done_men_sem);
+            sem_post(&worker_done_men_sem);
+          }
+        }
       }
       pthread_mutex_unlock(&men_queue_mutex);
     }
@@ -400,20 +405,22 @@ void women_bathroom_worker_entry_point() {
     pthread_mutex_lock(&women_queue_mutex);
     // Não libertar pessoas da fila se existem mais que duas pessoas nas casas
     // de banho
-    if (number_of_people_in_women_bahrooms >= LIMIT_PEOPLE_IN_WOMEN_BATHROOMS){
+    if (number_of_people_in_women_bahrooms >= LIMIT_PEOPLE_IN_WOMEN_BATHROOMS) {
       continue;
     }
 
     // Tentar libertar primeiro a lista dos vips antes de deixar os outros
     // passarem
-    struct queue_item *head = SLIST_FIRST(&women_restroom_vip_queue);
+    struct queue_item *head = NULL;
 
-    if (head) {
+    if (!SLIST_EMPTY(&women_restroom_vip_queue)) {
+      head = SLIST_FIRST(&women_restroom_vip_queue);
       SLIST_REMOVE_HEAD(&women_restroom_vip_queue, entries);
-    } else if (SLIST_FIRST(&women_restroom_queue) != NULL) {
+    } else if (!SLIST_EMPTY(&women_restroom_queue)) {
       head = SLIST_FIRST(&women_restroom_queue);
       SLIST_REMOVE_HEAD(&women_restroom_queue, entries);
     }
+
     pthread_mutex_unlock(&women_queue_mutex);
 
     if (head != NULL) {
@@ -440,38 +447,36 @@ void women_bathroom_worker_entry_point() {
       // Rolar uma chance para todos os utilizadores desistirem das filas de
       // espera da WC
       sem_post(&worker_done_women_sem);
-      
+
       pthread_mutex_lock(&women_queue_mutex);
-      SLIST_FOREACH(user, &women_restroom_queue, entries) {
-        if (!user)
-          continue;
+      if (!(SLIST_EMPTY(&women_restroom_queue))) {
+        SLIST_FOREACH(user, &women_restroom_queue, entries) {
+          if (rand() % 20 == 0 && user != NULL) {
+            SLIST_REMOVE(&women_restroom_queue, user, queue_item, entries);
+            user->left_state = QUIT;
+            sem_post(&user->semaphore);
 
-        if (rand() % 20 == 0 && SLIST_FIRST(&women_restroom_queue) != NULL) {
-          SLIST_REMOVE(&women_restroom_queue, user, queue_item, entries);
-          user->left_state = QUIT;
-          sem_post(&user->semaphore);
-
-          sem_wait(&user_done_women_sem);
-          sem_post(&worker_done_women_sem);
+            sem_wait(&user_done_women_sem);
+            sem_post(&worker_done_women_sem);
+          }
         }
-      }
 
-      user = NULL;
-      SLIST_FOREACH(user, &women_restroom_vip_queue, entries) {
-        if (!user)
-          continue;
+        user = NULL;
+        if (!(SLIST_EMPTY(&women_restroom_vip_queue))) {
+          SLIST_FOREACH(user, &women_restroom_vip_queue, entries) {
+            if (rand() % 20 == 0 && user != NULL) {
+              SLIST_REMOVE(&women_restroom_vip_queue, user, queue_item,
+                           entries);
+              user->left_state = QUIT;
+              sem_post(&user->semaphore);
 
-        if (rand() % 20 == 0 &&
-            SLIST_FIRST(&women_restroom_vip_queue) != NULL) {
-          SLIST_REMOVE(&women_restroom_vip_queue, user, queue_item, entries);
-          user->left_state = QUIT;
-          sem_post(&user->semaphore);
-
-          sem_wait(&user_done_women_sem);
-          sem_post(&worker_done_women_sem);
+              sem_wait(&user_done_women_sem);
+              sem_post(&worker_done_women_sem);
+            }
+          }
         }
+        pthread_mutex_unlock(&women_queue_mutex);
       }
-      pthread_mutex_unlock(&women_queue_mutex);
     }
   };
 
