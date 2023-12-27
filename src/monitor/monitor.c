@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
   };
 
   // TOOD RETIRAR ISTO
-  /* printf("\033c"); */
+  printf("\033c");
   printf("Entradas totais: %ld\n", args->stats->entradas_parque);
   printf("Desistências: %ld\n", args->stats->desistencias);
   printf("Acidentes ocorridos: %ld\n", args->stats->acidentes);

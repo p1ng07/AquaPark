@@ -131,16 +131,15 @@ int main(int argc, char* argv[]) {
     info_send->pthread_info = global_user_thread_list[i];
   }
 
-  sleep(4);
-
   time_t atual = 0;
   time_t inicio = 0;
   time(&inicio);
 
   do {
+    time(&atual);
 
-  pthread_mutex_lock(&global_user_thread_list_mutex);
-    for (int i = 0; i < MAX_THREADS; i++){
+    pthread_mutex_lock(&global_user_thread_list_mutex);
+    for (int i = 0; i < MAX_THREADS; i++) {
       // Chance de 50% de tentar criar um user novo no parque
       if(rand() % 2 == 0)
 	break;
@@ -157,15 +156,14 @@ int main(int argc, char* argv[]) {
         info_send->age = (rand() % 80) + 10;
 
         pthread_create(&global_user_thread_list[i], NULL,
-                       (void *)user_entry_point, info_send);
-        info_send->pthread_info = global_user_thread_list[i];
+		       (void *)user_entry_point, info_send);
+	info_send->pthread_info = global_user_thread_list[i];
 	break;
       }
     }
     pthread_mutex_unlock(&global_user_thread_list_mutex);
 
-    time(&atual);
-  } while (difftime(atual, inicio) < 7);
+  } while (difftime(atual, inicio) < 7.0f);
 
   parque_aberto = false;
 
@@ -174,6 +172,7 @@ int main(int argc, char* argv[]) {
   for (int i = 0; i < MAX_THREADS; i++) {
     if (global_user_thread_list[i] != 0){
 	pthread_cancel(global_user_thread_list[i]);
+	pthread_join(global_user_thread_list[i], NULL);
     }
   }
 

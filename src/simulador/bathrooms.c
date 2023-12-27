@@ -200,13 +200,13 @@ void men_bathroom_worker_entry_point() {
   // TODO remove busy waiting
   while (parque_aberto) {
 
+    pthread_mutex_lock(&men_queue_mutex);
     // Não libertar pessoas da fila se existem mais que duas pessoas nas casas
     // de banho
     if (number_of_people_in_men_bahrooms >= LIMIT_PEOPLE_IN_MEN_BATHROOMS){
       continue;
     }
 
-    pthread_mutex_lock(&men_queue_mutex);
     // Tentar libertar primeiro a lista dos vips antes de deixar os outros
     // passarem
     struct queue_item *head = SLIST_FIRST(&men_restroom_vip_queue);
@@ -397,13 +397,13 @@ void women_bathroom_worker_entry_point() {
   // TODO remove busy waiting
   while (parque_aberto) {
 
+    pthread_mutex_lock(&women_queue_mutex);
     // Não libertar pessoas da fila se existem mais que duas pessoas nas casas
     // de banho
     if (number_of_people_in_women_bahrooms >= LIMIT_PEOPLE_IN_WOMEN_BATHROOMS){
       continue;
     }
 
-    pthread_mutex_lock(&women_queue_mutex);
     // Tentar libertar primeiro a lista dos vips antes de deixar os outros
     // passarem
     struct queue_item *head = SLIST_FIRST(&women_restroom_vip_queue);

@@ -26,6 +26,7 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
   // Ideia: Receber um SIGUSRX que muda a variavel de controlo do while para
   // false
 
+
   while (1) {
     // Ler mensagem com MAX_MESSAGE_BUFFER_SIZE de tamanho
     int n = readn(*args->fd_cliente, buffer, MAX_MESSAGE_BUFFER_SIZE);
