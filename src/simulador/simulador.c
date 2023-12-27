@@ -91,27 +91,22 @@ int main(int argc, char* argv[]) {
   // Esperar por uma mensagem de começo
   wait_for_begin_message(client_socket);
 
+  pthread_t worker_threads[NUMBER_OF_WORKER_THREADS];
+
   // Criar worker threads para as atrações que precisam delas
-  pthread_t deficient_bathroom_worker_thread ;
-  pthread_create(&deficient_bathroom_worker_thread, NULL,
+  pthread_create(&worker_threads[DEF_WC_THREAD], NULL,
 		 (void*)disabled_bathroom_worker_entry_point, NULL);
 
-  pthread_t men_bathroom_worker_thread_1;
-  pthread_create(&men_bathroom_worker_thread_1, NULL,
+  pthread_create(&worker_threads[MEN_WC_THREAD_1], NULL,
+		 (void*)men_bathroom_worker_entry_point, NULL);
+  pthread_create(&worker_threads[MEN_WC_THREAD_2], NULL,
 		 (void*)men_bathroom_worker_entry_point, NULL);
 
-  pthread_t men_bathroom_worker_thread_2;
-  pthread_create(&men_bathroom_worker_thread_2, NULL,
-		 (void*)men_bathroom_worker_entry_point, NULL);
+  pthread_create(&worker_threads[WOMEN_WC_THREAD_1], NULL,
+		 (void*)women_bathroom_worker_entry_point, NULL);
+  pthread_create(&worker_threads[WOMEN_WC_THREAD_2], NULL,
+		 (void*)women_bathroom_worker_entry_point, NULL);
   
-  pthread_t women_bathroom_worker_thread_1;
-  pthread_create(&women_bathroom_worker_thread_1, NULL,
-		 (void*)women_bathroom_worker_entry_point, NULL);
-
-  pthread_t women_bathroom_worker_thread_2;
-  pthread_create(&women_bathroom_worker_thread_2, NULL,
-		 (void*)women_bathroom_worker_entry_point, NULL);
-
   int* allocated_client_socket = malloc(sizeof(int));
   *allocated_client_socket = client_socket;
 
