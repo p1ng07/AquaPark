@@ -135,6 +135,8 @@ int main(int argc, char* argv[]) {
   time_t inicio = 0;
   time(&inicio);
 
+  conf_parameter* tempo_simulacao = get_parameter_from_configuration(&conf, new_str("tempo_simulacao"));
+
   do {
     time(&atual);
 
@@ -163,7 +165,7 @@ int main(int argc, char* argv[]) {
     }
     pthread_mutex_unlock(&global_user_thread_list_mutex);
 
-  } while (difftime(atual, inicio) < 7.0f);
+  } while (difftime(atual, inicio) < tempo_simulacao->i);
 
   parque_aberto = false;
 
