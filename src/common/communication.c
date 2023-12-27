@@ -84,10 +84,28 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
         break;
       }
 
+      case ENWCH: {
+        // User entered the disabled bathroom
+        char string[100];
+
+        snprintf(string, 100, "MEN WC: User %d entered.\n", atoi(message));
+        fputs(string, file_eventos);
+        break;
+      }
+
+      case EXWCH: {
+        // User exited the disabled bathroom
+        char string[100];
+        snprintf(string, 100, "MEN WC: User %d used and exited.\n",
+                 atoi(message));
+        fputs(string, file_eventos);
+        break;
+      }
+
       case ENWCD: {
         // User entered the disabled bathroom
         char string[100];
-        snprintf(string, 100, "Disabled WC: User %d entered.\n", atoi(message));
+        snprintf(string, 100, "Disabled WC: User %d entered queue.\n", atoi(message));
         fputs(string, file_eventos);
         break;
       }

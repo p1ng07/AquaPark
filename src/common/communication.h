@@ -20,6 +20,9 @@ typedef enum MType {
 
   ENWCD, // User entrou na wc de deficientes, formato: "id"
   EXWCD, // User saiu da wc de deficientes, formato: "id"
+
+  ENWCH, // User entrou na wc de homens, formato: "id"
+  EXWCH, // User saiu da wc de homens, formato: "id"
 } MessageType;
 
 typedef struct {
