@@ -350,11 +350,13 @@ bool men_wc(user_info *info) {
   else if (entry->left_state == ACCIDENT)
     type = ACCID; // User teve um acidente e tem que sair do parque
 
+  pthread_mutex_lock(&men_queue_mutex);
   // Enviar mensagem para o monitor
   thread_send_message_to_socket(info->socket_monitor, type, buffer);
 
   sem_destroy(&entry->semaphore);
 
+  pthread_mutex_unlock(&men_queue_mutex);
   sem_wait(&worker_done_men_sem);
 
   free(entry);
@@ -551,10 +553,12 @@ bool women_wc(user_info *info) {
   else if (entry->left_state == ACCIDENT)
     type = ACCID; // User teve um acidente e tem que sair do parque
 
+  pthread_mutex_lock(&men_queue_mutex);
   // Enviar mensagem para o monitor
   thread_send_message_to_socket(info->socket_monitor, type, buffer);
 
   sem_destroy(&entry->semaphore);
+  pthread_mutex_unlock(&men_queue_mutex);
 
   sem_wait(&worker_done_women_sem);
 

@@ -5,6 +5,7 @@
 #include "../common/string.h"
 #include "bathrooms.h"
 #include "print.h"
+#include "toboga_pequeno.h"
 #include "user.h"
 #include <assert.h>
 #include <bits/pthreadtypes.h>
@@ -62,7 +63,7 @@ int main(int argc, char* argv[]) {
 
   // Carregar parametros
   configuration conf = extract_config_from_file(argv[1]);
-  conf_parameter* num_users_inicial = get_parameter_from_configuration(&conf, new_str("users_inicias"));
+  conf_parameter* num_users_inicial = get_parameter_from_configuration(&conf, new_str("users"));
 
   assert(num_users_inicial->i <= MAX_THREADS);
 
@@ -103,6 +104,9 @@ int main(int argc, char* argv[]) {
 		 (void*)women_bathroom_worker_entry_point, NULL);
   pthread_create(&worker_threads[WOMEN_WC_THREAD_2], NULL,
 		 (void*)women_bathroom_worker_entry_point, NULL);
+
+  pthread_create(&worker_threads[TOBOGAN_PEQUENO_THREAD], NULL,
+		 (void*)tobogan_pequeno_worker_entry_point, NULL);
   
   int* allocated_client_socket = malloc(sizeof(int));
   *allocated_client_socket = client_socket;

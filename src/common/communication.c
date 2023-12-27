@@ -162,7 +162,7 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
       }
 
       case EXTBP: {
-        // User exited the disabled bathroom
+        // User exited tobogan pequeno
         char string[100];
 	int id = atoi(strtok(message, ","));
 	bool vip = (bool)atoi(strtok(NULL, ","));
