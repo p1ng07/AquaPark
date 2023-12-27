@@ -6,13 +6,6 @@
 #include <sys/queue.h>
 #include <stdbool.h>
 
-// Estado que indica o que o utilizador deve fazer assim que sair da atração
-typedef enum {
-  RUNNING, // User deve continuar dentro do parque
-  QUIT, // User desistiu da sua fila de espera
-  ACCIDENT, // User teve um acidente e tem que sair do parque
-}user_state ;
-
 /* Summary: O user tenta entrar na sua casa de banho respetiva.
    Vai para a lista de espera respetiva e espera que o processo "worker" da
    casa de banho o faça avançar.
