@@ -200,13 +200,13 @@ void men_bathroom_worker_entry_point() {
   // TODO remove busy waiting
   while (parque_aberto) {
 
-    pthread_mutex_lock(&men_queue_mutex);
     // Não libertar pessoas da fila se existem mais que duas pessoas nas casas
     // de banho
-    if (number_of_people_in_men_bahrooms >= LIMIT_PEOPLE_IN_MEN_BATHROOMS){
+    if (number_of_people_in_men_bahrooms >= LIMIT_PEOPLE_IN_MEN_BATHROOMS) {
       continue;
     }
 
+    pthread_mutex_lock(&men_queue_mutex);
     // Tentar libertar primeiro a lista dos vips antes de deixar os outros
     // passarem
     struct queue_item *head = NULL;
@@ -214,6 +214,7 @@ void men_bathroom_worker_entry_point() {
     if (!SLIST_EMPTY(&men_restroom_vip_queue)) {
       head = SLIST_FIRST(&men_restroom_vip_queue);
       SLIST_REMOVE_HEAD(&men_restroom_vip_queue, entries);
+
     } else if (!SLIST_EMPTY(&men_restroom_queue)) {
       head = SLIST_FIRST(&men_restroom_queue);
       SLIST_REMOVE_HEAD(&men_restroom_queue, entries);
@@ -246,7 +247,7 @@ void men_bathroom_worker_entry_point() {
       // Rola uma chance para que, individualmente, todos os utilizadores
       // desistam das filas de espera
       pthread_mutex_lock(&men_queue_mutex);
-      if (!(SLIST_EMPTY(&men_restroom_queue))){
+      if (!(SLIST_EMPTY(&men_restroom_queue))) {
         SLIST_FOREACH(user, &men_restroom_queue, entries) {
           if (!user)
             continue;
@@ -263,10 +264,10 @@ void men_bathroom_worker_entry_point() {
       }
 
       user = NULL;
-      if (!(SLIST_EMPTY(&men_restroom_vip_queue))){
-	SLIST_FOREACH(user, &men_restroom_vip_queue, entries) {
-	  if (!user)
-	    continue;
+      if (!(SLIST_EMPTY(&men_restroom_vip_queue))) {
+        SLIST_FOREACH(user, &men_restroom_vip_queue, entries) {
+          if (!user)
+            continue;
 
           if (rand() % 20 == 0 && user != NULL) {
             SLIST_REMOVE(&men_restroom_vip_queue, user, queue_item, entries);
@@ -276,7 +277,7 @@ void men_bathroom_worker_entry_point() {
             sem_wait(&user_done_men_sem);
             sem_post(&worker_done_men_sem);
           }
-        }
+	}
       }
       pthread_mutex_unlock(&men_queue_mutex);
     }
@@ -404,13 +405,13 @@ void women_bathroom_worker_entry_point() {
   // TODO remove busy waiting
   while (parque_aberto) {
 
-    pthread_mutex_lock(&women_queue_mutex);
     // Não libertar pessoas da fila se existem mais que duas pessoas nas casas
     // de banho
     if (number_of_people_in_women_bahrooms >= LIMIT_PEOPLE_IN_WOMEN_BATHROOMS) {
       continue;
     }
 
+    pthread_mutex_lock(&women_queue_mutex);
     // Tentar libertar primeiro a lista dos vips antes de deixar os outros
     // passarem
     struct queue_item *head = NULL;
@@ -461,24 +462,23 @@ void women_bathroom_worker_entry_point() {
             sem_wait(&user_done_women_sem);
             sem_post(&worker_done_women_sem);
           }
-        }
-
-        user = NULL;
-        if (!(SLIST_EMPTY(&women_restroom_vip_queue))) {
-          SLIST_FOREACH(user, &women_restroom_vip_queue, entries) {
-            if (rand() % 20 == 0 && user != NULL) {
-              SLIST_REMOVE(&women_restroom_vip_queue, user, queue_item,
-                           entries);
-              user->left_state = QUIT;
-              sem_post(&user->semaphore);
-
-              sem_wait(&user_done_women_sem);
-              sem_post(&worker_done_women_sem);
-            }
-          }
-        }
-        pthread_mutex_unlock(&women_queue_mutex);
+	}
       }
+
+      user = NULL;
+      if (!(SLIST_EMPTY(&women_restroom_vip_queue))) {
+        SLIST_FOREACH(user, &women_restroom_vip_queue, entries) {
+          if (rand() % 20 == 0 && user != NULL) {
+            SLIST_REMOVE(&women_restroom_vip_queue, user, queue_item, entries);
+            user->left_state = QUIT;
+            sem_post(&user->semaphore);
+
+            sem_wait(&user_done_women_sem);
+            sem_post(&worker_done_women_sem);
+          }
+	}
+      }
+      pthread_mutex_unlock(&women_queue_mutex);
     }
   };
 
@@ -492,9 +492,9 @@ void women_bathroom_worker_entry_point() {
 
     sem_wait(&user_done_women_sem);
     sem_post(&worker_done_women_sem);
-    pthread_mutex_unlock(&women_queue_mutex);
 
     user = user->entries.sle_next;
+    pthread_mutex_unlock(&women_queue_mutex);
   };
 
   // Libertar todos os utilizadores da lista de espera vip
@@ -506,6 +506,7 @@ void women_bathroom_worker_entry_point() {
 
     sem_wait(&user_done_women_sem);
     sem_post(&worker_done_women_sem);
+    user = user->entries.sle_next;
     pthread_mutex_unlock(&women_queue_mutex);
   };
 }

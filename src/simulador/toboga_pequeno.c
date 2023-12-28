@@ -20,17 +20,22 @@ pthread_mutex_t tobogan_pequeno_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // Age como um trinco duplo, para que um utilizador possa
 // sair da casa de banho sem ser interrompido
-sem_t user_done_tobogan_pequeno_sem, worker_done_tobogan_pequeno_sem;
+sem_t user_done_tobogan_pequeno_sem, worker_done_tobogan_pequeno_sem,
+    trigger_entry_tobogan_pequeno_sem;
 
 void tobogan_pequeno_worker_entry_point() {
   sem_init(&user_done_tobogan_pequeno_sem, 0, 0);
   sem_init(&worker_done_tobogan_pequeno_sem, 0, 0);
-
+  sem_init(&trigger_entry_tobogan_pequeno_sem, 0, 0);
+  
   SLIST_INIT(&tobogan_pequeno_queue);
   SLIST_INIT(&tobogan_pequeno_vip_queue);
 
   // TODO remove busy waiting
   while (parque_aberto) {
+
+    // Esperar que haja alguém na fila
+    sem_wait(&trigger_entry_tobogan_pequeno_sem);
 
     pthread_mutex_lock(&tobogan_pequeno_mutex);
 
@@ -49,36 +54,38 @@ void tobogan_pequeno_worker_entry_point() {
 
     if (head != NULL) {
 
+    pthread_mutex_lock(&tobogan_pequeno_mutex);
       // Chance de 1 em 1000 de haver um acidente
       if (rand() % 1000 == 0) {
         head->left_state = ACCIDENT;
       }
 
       sem_post(&head->semaphore);
+    pthread_mutex_unlock(&tobogan_pequeno_mutex);
 
       sem_wait(&user_done_tobogan_pequeno_sem);
       // User a sair da casa de banho
 
-
       sem_post(&worker_done_tobogan_pequeno_sem);
 
+      /* pthread_mutex_lock(&tobogan_pequeno_mutex); */
       // Rola uma chance para que, individualmente, todos os utilizadores
       // desistam das filas de espera
       // Sempre que um utilizador sai na casa de banho, rolar uma chance de os
       // outros desistirem
-      struct queue_item *user = NULL;
       pthread_mutex_lock(&tobogan_pequeno_mutex);
-      if (!(SLIST_EMPTY(&tobogan_pequeno_queue))){
+      struct queue_item *user = NULL;
+      if (!(SLIST_EMPTY(&tobogan_pequeno_queue))) {
         SLIST_FOREACH(user, &tobogan_pequeno_queue, entries) {
-          if (rand() % 20 == 0 && user != NULL) {
-            SLIST_REMOVE(&tobogan_pequeno_queue, user, queue_item, entries);
-            user->left_state = QUIT;
-            sem_post(&user->semaphore);
+	  if (rand() % 20 == 0 && user != NULL) {
+	    SLIST_REMOVE(&tobogan_pequeno_queue, user, queue_item, entries);
+	    user->left_state = QUIT;
+	    sem_post(&user->semaphore);
 
-            sem_wait(&user_done_tobogan_pequeno_sem);
-            sem_post(&worker_done_tobogan_pequeno_sem);
-          }
-        }
+	    sem_wait(&user_done_tobogan_pequeno_sem);
+	    sem_post(&worker_done_tobogan_pequeno_sem);
+	  }
+	}
       }
 
       user = NULL;
@@ -125,13 +132,13 @@ void tobogan_pequeno_worker_entry_point() {
 
 bool tobogan_pequeno(user_info *info) {
 
+  pthread_mutex_lock(&tobogan_pequeno_mutex);
+
   // Criar entrada deste user na lista de espera da casa de banho
   struct queue_item *entry = malloc(sizeof(struct queue_item));
   sem_init(&entry->semaphore, 0, 0);
   entry->entries.sle_next = NULL;
   entry->left_state = RUNNING;
-
-  pthread_mutex_lock(&tobogan_pequeno_mutex);
 
   if (is_vip(info))
     insert_at_end_of_slist(&tobogan_pequeno_vip_queue, entry);
@@ -143,6 +150,10 @@ bool tobogan_pequeno(user_info *info) {
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
   snprintf(buffer, MAX_MESSAGE_BUFFER_SIZE - 1, "%d,%d", info->i, (is_vip(info)? 1 : 0));
   thread_send_message_to_socket(info->socket_monitor, ENTBP, buffer);
+
+  // Sinalizar que existe alguém há espera numa fila
+  
+  sem_post(&trigger_entry_tobogan_pequeno_sem);
 
   pthread_mutex_unlock(&tobogan_pequeno_mutex);
 
