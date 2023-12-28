@@ -4,3 +4,4 @@ bin/*
 obj/
 eventos.txt
 relatorio.pdf
+eventos/*

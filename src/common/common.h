@@ -15,4 +15,13 @@
 #define TOBOGAN_PEQUENO_THREAD 5
 #define TOBOGAN_GRANDE_THREAD 6
 
+#define FICHEIRO_PISCINA_EVENTOS "eventos/piscina.txt"
+#define FICHEIRO_PISCINA_CRIANCAS_EVENTOS "eventos/piscina_criancas.txt"
+#define FICHEIRO_TOBOGAN_GRANDE_EVENTOS "eventos/tobogan_grande.txt"
+#define FICHEIRO_TOBOGAN_PEQUENO_EVENTOS "eventos/tobogan_pequeno.txt"
+#define FICHEIRO_WC_DEF_EVENTOS "eventos/wc_def.txt"
+#define FICHEIRO_WC_MEN_EVENTOS "eventos/wc_men.txt"
+#define FICHEIRO_WC_WOMEN_EVENTOS "eventos/wc_women.txt"
+#define FICHEIRO_BAR_EVENTOS "eventos/bar.txt"
+
 #endif
