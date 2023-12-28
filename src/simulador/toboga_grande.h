@@ -11,10 +11,13 @@
    Se não existirem dois users diferentes (vips ou normais), apenas um entrará na
    atração
 
+   Sempre que uma viagem é completa, o worker informa a thread de comunicação
+   do tipo da viagem, se houve um ou dois utilizadores
+
    Assim que o parque fechar (controlado pela variável global parque_aberto),
    todos os utilizadores saem da fila e do parque.
  */
-void tobogan_grande_worker_entry_point();
+void tobogan_grande_worker_entry_point(int* communication_socket);
 
 /* Summary: Tenta entrar no tobogan grande
    O tobogan tem uma fila de espera que respeita prioridades(i.e tenta deixar

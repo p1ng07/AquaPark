@@ -2,6 +2,7 @@
 
 #include "../common/common.h"
 #include "slist.h"
+#include "user.h"
 #include <assert.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -25,7 +26,7 @@ pthread_mutex_t tobogan_grande_mutex = PTHREAD_MUTEX_INITIALIZER;
 // sair da casa de banho sem ser interrompido
 sem_t user_done_tobogan_grande_sem, worker_done_tobogan_grande_sem;
 
-void tobogan_grande_worker_entry_point(){
+void tobogan_grande_worker_entry_point(int* communication_socket){
   sem_init(&user_done_tobogan_grande_sem, 0, 0);
   sem_init(&worker_done_tobogan_grande_sem, 0, 0);
 
@@ -123,13 +124,15 @@ void tobogan_grande_worker_entry_point(){
       sem_post(&worker_done_tobogan_grande_sem);
 
       if (tail) {
-        // Se existir um segundo utilizador, esperar que este entre na atração
+        // Avançar o segundo user
         sem_post(&worker_done_tobogan_grande_sem);
-      }
 
-      // Esperar 0.5 milisegundos para que haja mais que uma pessoa nas filas de
-      // espera
-      usleep(500);
+	// Ocorreu uma viagem com dois utilizadores
+	thread_send_message_to_socket(communication_socket, DUTBG, "");
+      }else{
+	// Ocorreu uma viagem com dois utilizadores
+	thread_send_message_to_socket(communication_socket, INTBG, "");
+      }
     }
     pthread_mutex_unlock(&tobogan_grande_mutex);
   }
@@ -205,8 +208,8 @@ bool tobogan_grande(user_info *info){
 
   sem_destroy(&entry->semaphore);
 
-  free(entry);
   sem_wait(&worker_done_tobogan_grande_sem);
 
+  free(entry);
   return accident;
 }

@@ -112,12 +112,13 @@ int main(int argc, char* argv[]) {
   pthread_create(&worker_threads[TOBOGAN_PEQUENO_THREAD], NULL,
 		 (void*)tobogan_pequeno_worker_entry_point, NULL);
   
-  // Worker tobogan grande
-  pthread_create(&worker_threads[TOBOGAN_GRANDE_THREAD], NULL,
-		 (void*)tobogan_grande_worker_entry_point, NULL);
-  
   int* allocated_client_socket = malloc(sizeof(int));
   *allocated_client_socket = client_socket;
+
+  // Worker tobogan grande
+  pthread_create(&worker_threads[TOBOGAN_GRANDE_THREAD], NULL,
+		 (void*)tobogan_grande_worker_entry_point, allocated_client_socket);
+  
 
   // TODO Adicionar hora local de inicio de simulação, horas para cada diversão
   // estar aberta, e mudar "parque_aberto" consoante as horas, qualquer o

@@ -36,6 +36,8 @@ typedef enum MType {
   ENTBG, // User entrou na fila de espera do tobogan grande, formato: "id,vip"
          // = 1 signifca que user que entrou é vip
   EXTBG, // User usou e saiu do toboga grande, formato: "id,vip"
+  DUTBG, // Ocorreu uma viagem de dois users no toboga grande
+  INTBG, // Ocorreu uma viagem de um user no toboga grande
 } MessageType;
 
 typedef struct {

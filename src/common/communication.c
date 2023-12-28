@@ -216,6 +216,22 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
         fputs(string, file_eventos);
         break;
       }
+      case DUTBG: {
+        // Ocorreu uma viagem de dois users no toboga grande
+        char string[100];
+        snprintf(string, 100,
+                 "Toboga grande: Ocorreu uma viagem com dois utilizadores.\n");
+        fputs(string, file_eventos);
+        break;
+      }
+      case INTBG: {
+	// Ocorreu uma viagem de um user no toboga grande
+	char string[100];
+        snprintf(string, 100,
+                 "Toboga grande: Ocorreu uma viagem com um utilizador.\n");
+        fputs(string, file_eventos);
+        break;
+      }
       case ERROR: {
         printf("\n------------------------------------\n");
         printf("\nOCORREU UM ERRO FATAL\n");
