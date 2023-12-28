@@ -153,8 +153,8 @@ bool disabled_wc(user_info *info) {
   thread_send_message_to_socket(info->socket_monitor, type, buffer);
 
   sem_destroy(&entry->semaphore);
-  free(entry);
 
+  free(entry);
   sem_wait(&worker_done_def_sem);
 
   return accident;
@@ -357,10 +357,10 @@ bool men_wc(user_info *info) {
 
   sem_destroy(&entry->semaphore);
 
+  free(entry);
   pthread_mutex_unlock(&men_queue_mutex);
   sem_wait(&worker_done_men_sem);
 
-  free(entry);
   return accident;
 }
 
@@ -455,26 +455,30 @@ void women_bathroom_worker_entry_point() {
       if (!(SLIST_EMPTY(&women_restroom_queue))) {
         SLIST_FOREACH(user, &women_restroom_queue, entries) {
           if (rand() % 20 == 0 && user != NULL) {
-            SLIST_REMOVE(&women_restroom_queue, user, queue_item, entries);
-            user->left_state = QUIT;
-            sem_post(&user->semaphore);
+	    if (women_restroom_queue.slh_first && user) {
+              SLIST_REMOVE(&women_restroom_queue, user, queue_item, entries);
+              user->left_state = QUIT;
+              sem_post(&user->semaphore);
 
-            sem_wait(&user_done_women_sem);
-            sem_post(&worker_done_women_sem);
+              sem_wait(&user_done_women_sem);
+              sem_post(&worker_done_women_sem);
+            }
           }
-	}
+        }
       }
 
       user = NULL;
       if (!(SLIST_EMPTY(&women_restroom_vip_queue))) {
         SLIST_FOREACH(user, &women_restroom_vip_queue, entries) {
           if (rand() % 20 == 0 && user != NULL) {
+	    if (women_restroom_vip_queue.slh_first && user) {
             SLIST_REMOVE(&women_restroom_vip_queue, user, queue_item, entries);
             user->left_state = QUIT;
             sem_post(&user->semaphore);
 
             sem_wait(&user_done_women_sem);
             sem_post(&worker_done_women_sem);
+	    }
           }
 	}
       }
@@ -559,11 +563,10 @@ bool women_wc(user_info *info) {
   thread_send_message_to_socket(info->socket_monitor, type, buffer);
 
   sem_destroy(&entry->semaphore);
+  free(entry);
   pthread_mutex_unlock(&men_queue_mutex);
-
   sem_wait(&worker_done_women_sem);
 
-  free(entry);
   return accident;
 }
 

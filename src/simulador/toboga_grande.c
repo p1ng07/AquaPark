@@ -57,6 +57,40 @@ void tobogan_grande_worker_entry_point(){
       tail = SLIST_FIRST(&tobogan_grande_queue);
       SLIST_REMOVE_HEAD(&tobogan_grande_queue, entries);
     }
+    //----------------------DESISTÊNCIAS-----------------------
+    // Rola uma chance para que, individualmente, todos os utilizadores
+    // desistam das filas de espera
+    // Sempre que alguém entra na atração, rolar uma chance para que todos os
+    // utilizadores, individualmente, desistam das suas filas de espera
+    /* pthread_mutex_lock(&tobogan_grande_mutex); */
+    struct queue_item *user = NULL;
+    if (!(SLIST_EMPTY(&tobogan_grande_queue))) {
+      SLIST_FOREACH(user, &tobogan_grande_queue, entries) {
+        if (rand() % 20 == 0 && user != NULL) {
+          SLIST_REMOVE(&tobogan_grande_queue, user, queue_item, entries);
+          user->left_state = QUIT;
+          sem_post(&user->semaphore);
+
+          sem_wait(&user_done_tobogan_grande_sem);
+          sem_post(&worker_done_tobogan_grande_sem);
+        }
+      }
+    }
+
+    user = NULL;
+    if (!(SLIST_EMPTY(&tobogan_grande_vip_queue))) {
+      SLIST_FOREACH(user, &tobogan_grande_vip_queue, entries) {
+        if (rand() % 20 == 0 && user != NULL) {
+          SLIST_REMOVE(&tobogan_grande_vip_queue, user, queue_item, entries);
+          user->left_state = QUIT;
+          sem_post(&user->semaphore);
+
+          sem_wait(&user_done_tobogan_grande_sem);
+          sem_post(&worker_done_tobogan_grande_sem);
+        }
+      }
+    }
+    //----------------- FIM DESISTÊNCIAS ------------------
 
     /* pthread_mutex_unlock(&tobogan_grande_mutex); */
 
@@ -92,41 +126,6 @@ void tobogan_grande_worker_entry_point(){
         // Se existir um segundo utilizador, esperar que este entre na atração
         sem_post(&worker_done_tobogan_grande_sem);
       }
-
-      //----------------------DESISTÊNCIAS-----------------------
-      // Rola uma chance para que, individualmente, todos os utilizadores
-      // desistam das filas de espera
-      // Sempre que alguém entra na atração, rolar uma chance para que todos os
-      // utilizadores, individualmente, desistam das suas filas de espera
-      /* pthread_mutex_lock(&tobogan_grande_mutex); */
-      struct queue_item *user = NULL;
-      if (!(SLIST_EMPTY(&tobogan_grande_queue))) {
-        SLIST_FOREACH(user, &tobogan_grande_queue, entries) {
-          if (rand() % 20 == 0 && user != NULL) {
-            SLIST_REMOVE(&tobogan_grande_queue, user, queue_item, entries);
-            user->left_state = QUIT;
-            sem_post(&user->semaphore);
-
-            sem_wait(&user_done_tobogan_grande_sem);
-            sem_post(&worker_done_tobogan_grande_sem);
-          }
-        }
-      }
-
-      user = NULL;
-      if (!(SLIST_EMPTY(&tobogan_grande_vip_queue))) {
-        SLIST_FOREACH(user, &tobogan_grande_vip_queue, entries) {
-          if (rand() % 20 == 0 && user != NULL) {
-            SLIST_REMOVE(&tobogan_grande_vip_queue, user, queue_item, entries);
-            user->left_state = QUIT;
-            sem_post(&user->semaphore);
-
-            sem_wait(&user_done_tobogan_grande_sem);
-            sem_post(&worker_done_tobogan_grande_sem);
-          }
-        }
-      }
-      //----------------- FIM DESISTÊNCIAS ------------------
 
       // Esperar 0.5 milisegundos para que haja mais que uma pessoa nas filas de
       // espera
@@ -206,8 +205,8 @@ bool tobogan_grande(user_info *info){
 
   sem_destroy(&entry->semaphore);
 
+  free(entry);
   sem_wait(&worker_done_tobogan_grande_sem);
 
-  free(entry);
   return accident;
 }
