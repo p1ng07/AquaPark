@@ -8,7 +8,6 @@
 
 extern bool parque_aberto;
 
-
 // Lista de espera para a casa de banho dos deficientes
 struct queue_head tobogan_pequeno_queue =
     SLIST_HEAD_INITIALIZER(tobogan_pequeno_queue);

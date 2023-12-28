@@ -5,6 +5,7 @@
 #include "../common/string.h"
 #include "bathrooms.h"
 #include "print.h"
+#include "toboga_grande.h"
 #include "toboga_pequeno.h"
 #include "user.h"
 #include <assert.h>
@@ -95,18 +96,25 @@ int main(int argc, char* argv[]) {
   pthread_create(&worker_threads[DEF_WC_THREAD], NULL,
 		 (void*)disabled_bathroom_worker_entry_point, NULL);
 
+  // Workers wc homens, existe um worker por casa de banho
   pthread_create(&worker_threads[MEN_WC_THREAD_1], NULL,
 		 (void*)men_bathroom_worker_entry_point, NULL);
   pthread_create(&worker_threads[MEN_WC_THREAD_2], NULL,
 		 (void*)men_bathroom_worker_entry_point, NULL);
 
+  // Workers WC mulheres, existe um worker por casa de banho
   pthread_create(&worker_threads[WOMEN_WC_THREAD_1], NULL,
 		 (void*)women_bathroom_worker_entry_point, NULL);
   pthread_create(&worker_threads[WOMEN_WC_THREAD_2], NULL,
 		 (void*)women_bathroom_worker_entry_point, NULL);
 
+  // Worker tobogan pequeno
   pthread_create(&worker_threads[TOBOGAN_PEQUENO_THREAD], NULL,
 		 (void*)tobogan_pequeno_worker_entry_point, NULL);
+  
+  // Worker tobogan grande
+  pthread_create(&worker_threads[TOBOGAN_GRANDE_THREAD], NULL,
+		 (void*)tobogan_grande_worker_entry_point, NULL);
   
   int* allocated_client_socket = malloc(sizeof(int));
   *allocated_client_socket = client_socket;

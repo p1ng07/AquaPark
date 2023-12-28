@@ -22,12 +22,4 @@ void tobogan_pequeno_worker_entry_point();
 */
 bool tobogan_pequeno(user_info *info);
 
-/* Summary: Tenta entrar na casa de banho dos deficientes
-
-   info: Informação sobre o user corrente
-
-   @Returns: True, se houve um acidente
-             False, se não houve acidente
-*/
-
 #endif

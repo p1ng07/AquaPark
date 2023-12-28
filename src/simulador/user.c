@@ -2,6 +2,7 @@
 #include "../common/common.h"
 #include "../common/communication.h"
 #include "bathrooms.h"
+#include "toboga_grande.h"
 #include "toboga_pequeno.h"
 #include <assert.h>
 #include <bits/pthreadtypes.h>
@@ -81,6 +82,7 @@ bool try_enter_attractions(user_info *info) {
   } break;
   case 2: {
     // TODO Toboga grande
+    return tobogan_grande(info);
   } break;
   case 3: {
     // TODO Toboga pequena
