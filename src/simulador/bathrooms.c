@@ -73,23 +73,22 @@ void disabled_bathroom_worker_entry_point() {
       sem_wait(&user_done_def_sem);
       sem_post(&worker_done_def_sem);
 
-      // Sempre que um utilizador sai na casa de banho, rolar uma chance de os
-      // outros desistirem
+      // -------------------DESISTÊNCIAS---------------------
+      // Rola uma chance para que, individualmente, todos os utilizadores, menos
+      // os no início das filas de espera, desistam das filas de espera
 
-      struct queue_item *user = NULL;
-      SLIST_FOREACH(user, &deficient_restroom_queue, entries) {
-        if (user) {
-          // TODO Adicionar chance de desistência a um parametro no ficheiro de
-          // configuração
-          // TODO Mudar a heuristica de desistência
-          if (rand() % 20 == 0 && slist_length(&deficient_restroom_queue) > 0) {
-            SLIST_REMOVE(&deficient_restroom_queue, user, queue_item, entries);
-            user->left_state = QUIT;
-            sem_post(&user->semaphore);
+      for (struct queue_item *it = deficient_restroom_queue.slh_first; it;
+	   it = it->entries.sle_next) {
+	if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
+          struct queue_item *delete_node = it->entries.sle_next;
 
-            sem_wait(&user_done_def_sem);
-            sem_post(&worker_done_def_sem);
-          }
+          it->entries.sle_next = it->entries.sle_next->entries.sle_next;
+
+          delete_node->left_state = QUIT;
+          sem_post(&delete_node->semaphore);
+
+          sem_wait(&user_done_def_sem);
+	  sem_post(&worker_done_def_sem);
         }
       }
     }
@@ -240,44 +239,40 @@ void men_bathroom_worker_entry_point() {
       // Sempre que um utilizador sai na casa de banho, rolar uma chance de os
       // outros desistirem
       // TODO Desistências
-      struct queue_item *user = NULL;
 
       sem_post(&worker_done_men_sem);
 
-      // Rola uma chance para que, individualmente, todos os utilizadores
-      // desistam das filas de espera
+      // Rola uma chance para que, individualmente, todos os utilizadores, menos
+      // os no início das filas de espera, desistam das filas de espera
       pthread_mutex_lock(&men_queue_mutex);
-      if (!(SLIST_EMPTY(&men_restroom_queue))) {
-        SLIST_FOREACH(user, &men_restroom_queue, entries) {
-          if (!user)
-            continue;
+      for (struct queue_item *it = men_restroom_queue.slh_first; it;
+	   it = it->entries.sle_next) {
+	if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
+          struct queue_item *delete_node = it->entries.sle_next;
 
-          if (rand() % 20 == 0 && user != NULL) {
-            SLIST_REMOVE(&men_restroom_queue, user, queue_item, entries);
-            user->left_state = QUIT;
-            sem_post(&user->semaphore);
+          it->entries.sle_next = it->entries.sle_next->entries.sle_next;
 
-            sem_wait(&user_done_men_sem);
-            sem_post(&worker_done_men_sem);
-          }
+          delete_node->left_state = QUIT;
+          sem_post(&delete_node->semaphore);
+
+	  sem_wait(&user_done_men_sem);
+	  sem_post(&worker_done_men_sem);
         }
       }
 
-      user = NULL;
-      if (!(SLIST_EMPTY(&men_restroom_vip_queue))) {
-        SLIST_FOREACH(user, &men_restroom_vip_queue, entries) {
-          if (!user)
-            continue;
+      for (struct queue_item *it = men_restroom_vip_queue.slh_first; it;
+	   it = it->entries.sle_next) {
+	if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
+          struct queue_item *delete_node = it->entries.sle_next;
 
-          if (rand() % 20 == 0 && user != NULL) {
-            SLIST_REMOVE(&men_restroom_vip_queue, user, queue_item, entries);
-            user->left_state = QUIT;
-            sem_post(&user->semaphore);
+          it->entries.sle_next = it->entries.sle_next->entries.sle_next;
 
-            sem_wait(&user_done_men_sem);
-            sem_post(&worker_done_men_sem);
-          }
-	}
+          delete_node->left_state = QUIT;
+          sem_post(&delete_node->semaphore);
+
+          sem_wait(&user_done_men_sem);
+	  sem_post(&worker_done_men_sem);
+        }
       }
       pthread_mutex_unlock(&men_queue_mutex);
     }
@@ -442,44 +437,43 @@ void women_bathroom_worker_entry_point() {
       // User a sair da casa de banho
 
       number_of_people_in_women_bahrooms--;
-      // Sempre que um utilizador sai na casa de banho, rolar uma chance de os
-      // outros desistirem
-      // TODO Desistências
-      struct queue_item *user = NULL;
-
-      // Rolar uma chance para todos os utilizadores desistirem das filas de
-      // espera da WC
+      
       sem_post(&worker_done_women_sem);
 
       pthread_mutex_lock(&women_queue_mutex);
-      if (!(SLIST_EMPTY(&women_restroom_queue))) {
-        SLIST_FOREACH(user, &women_restroom_queue, entries) {
-          if (rand() % 20 == 0 && user != NULL) {
-	    if (women_restroom_queue.slh_first && user) {
-              SLIST_REMOVE(&women_restroom_queue, user, queue_item, entries);
-              user->left_state = QUIT;
-              sem_post(&user->semaphore);
+      // -------------------DESISTÊNCIAS---------------------
+      // Rola uma chance para que, individualmente, todos os utilizadores, menos
+      // os no início das filas de espera, desistam das filas de espera
 
-              sem_wait(&user_done_women_sem);
-              sem_post(&worker_done_women_sem);
-            }
-          }
+      for (struct queue_item *it = women_restroom_queue.slh_first; it;
+	   it = it->entries.sle_next) {
+
+        if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
+          struct queue_item *delete_node = it->entries.sle_next;
+
+          it->entries.sle_next = it->entries.sle_next->entries.sle_next;
+
+          delete_node->left_state = QUIT;
+	  sem_post(&delete_node->semaphore);
+
+          sem_wait(&user_done_women_sem);
+	  sem_post(&worker_done_women_sem);
         }
       }
 
-      user = NULL;
-      if (!(SLIST_EMPTY(&women_restroom_vip_queue))) {
-        SLIST_FOREACH(user, &women_restroom_vip_queue, entries) {
-          if (rand() % 20 == 0 && user != NULL) {
-	    if (women_restroom_vip_queue.slh_first && user) {
-            SLIST_REMOVE(&women_restroom_vip_queue, user, queue_item, entries);
-            user->left_state = QUIT;
-            sem_post(&user->semaphore);
+      for (struct queue_item *it = women_restroom_vip_queue.slh_first; it;
+	   it = it->entries.sle_next) {
 
-            sem_wait(&user_done_women_sem);
-            sem_post(&worker_done_women_sem);
-	    }
-          }
+	if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
+	  struct queue_item *delete_node = it->entries.sle_next;
+
+	  it->entries.sle_next = it->entries.sle_next->entries.sle_next;
+
+          delete_node->left_state = QUIT;
+          sem_post(&delete_node->semaphore);
+
+          sem_wait(&user_done_women_sem);
+	  sem_post(&worker_done_women_sem);
 	}
       }
       pthread_mutex_unlock(&women_queue_mutex);
