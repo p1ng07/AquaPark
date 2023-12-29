@@ -65,7 +65,7 @@ void disabled_bathroom_worker_entry_point() {
       SLIST_REMOVE_HEAD(&deficient_restroom_queue, entries);
 
       // Chance de 1 em 1000 de haver um acidente
-      if (rand() % 1000 == 0) {
+      if (should_have_accident()) {
         head->left_state = ACCIDENT;
       }
       sem_post(&head->semaphore);
@@ -77,18 +77,20 @@ void disabled_bathroom_worker_entry_point() {
       // Rola uma chance para que, individualmente, todos os utilizadores, menos
       // os no início das filas de espera, desistam das filas de espera
 
-      for (struct queue_item *it = deficient_restroom_queue.slh_first; it;
-	   it = it->entries.sle_next) {
-	if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
-          struct queue_item *delete_node = it->entries.sle_next;
+      if (deficient_restroom_queue.slh_first != NULL) {
+        for (struct queue_item *it = deficient_restroom_queue.slh_first; it;
+             it = it->entries.sle_next) {
+          if (should_quit_attraction() && it->entries.sle_next) {
+            struct queue_item *delete_node = it->entries.sle_next;
 
-          it->entries.sle_next = it->entries.sle_next->entries.sle_next;
+            it->entries.sle_next = it->entries.sle_next->entries.sle_next;
 
-          delete_node->left_state = QUIT;
-          sem_post(&delete_node->semaphore);
+            delete_node->left_state = QUIT;
+            sem_post(&delete_node->semaphore);
 
-          sem_wait(&user_done_def_sem);
-	  sem_post(&worker_done_def_sem);
+            sem_wait(&user_done_def_sem);
+            sem_post(&worker_done_def_sem);
+          }
         }
       }
     }
@@ -120,7 +122,6 @@ bool disabled_wc(user_info *info) {
   insert_at_end_of_slist(&deficient_restroom_queue, entry);
 
   pthread_mutex_unlock(&deficient_queue_mutex);
-
 
   // Mensagem de entrada de user na casa de banho dos deficientes
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
@@ -223,7 +224,7 @@ void men_bathroom_worker_entry_point() {
     if (head != NULL) {
 
       // Chance de 1 em 1000 de haver um acidente
-      if (rand() % 1000 == 0) {
+      if (should_have_accident()) {
         head->left_state = ACCIDENT;
       }
 
@@ -245,35 +246,37 @@ void men_bathroom_worker_entry_point() {
       // Rola uma chance para que, individualmente, todos os utilizadores, menos
       // os no início das filas de espera, desistam das filas de espera
       pthread_mutex_lock(&men_queue_mutex);
-      for (struct queue_item *it = men_restroom_queue.slh_first; it;
-	   it = it->entries.sle_next) {
-	if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
-          struct queue_item *delete_node = it->entries.sle_next;
+      if (men_restroom_queue.slh_first != NULL)
+        for (struct queue_item *it = men_restroom_queue.slh_first; it;
+             it = it->entries.sle_next) {
+          if (should_quit_attraction()&& it->entries.sle_next) {
+            struct queue_item *delete_node = it->entries.sle_next;
 
-          it->entries.sle_next = it->entries.sle_next->entries.sle_next;
+            it->entries.sle_next = it->entries.sle_next->entries.sle_next;
 
-          delete_node->left_state = QUIT;
-          sem_post(&delete_node->semaphore);
+            delete_node->left_state = QUIT;
+            sem_post(&delete_node->semaphore);
 
-	  sem_wait(&user_done_men_sem);
-	  sem_post(&worker_done_men_sem);
+            sem_wait(&user_done_men_sem);
+            sem_post(&worker_done_men_sem);
+          }
         }
-      }
 
-      for (struct queue_item *it = men_restroom_vip_queue.slh_first; it;
-	   it = it->entries.sle_next) {
-	if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
-          struct queue_item *delete_node = it->entries.sle_next;
+      if (men_restroom_vip_queue.slh_first != NULL)
+        for (struct queue_item *it = men_restroom_vip_queue.slh_first; it;
+             it = it->entries.sle_next) {
+          if (should_quit_attraction()&& it->entries.sle_next) {
+            struct queue_item *delete_node = it->entries.sle_next;
 
-          it->entries.sle_next = it->entries.sle_next->entries.sle_next;
+            it->entries.sle_next = it->entries.sle_next->entries.sle_next;
 
-          delete_node->left_state = QUIT;
-          sem_post(&delete_node->semaphore);
+            delete_node->left_state = QUIT;
+            sem_post(&delete_node->semaphore);
 
-          sem_wait(&user_done_men_sem);
-	  sem_post(&worker_done_men_sem);
+            sem_wait(&user_done_men_sem);
+            sem_post(&worker_done_men_sem);
+          }
         }
-      }
       pthread_mutex_unlock(&men_queue_mutex);
     }
   };
@@ -282,7 +285,6 @@ void men_bathroom_worker_entry_point() {
 
   // Libertar todos os utilizadores na fila de espera quando o parque fecha
   while (user) {
-    user->left_state = QUIT;
     sem_post(&user->semaphore);
 
     sem_wait(&user_done_men_sem);
@@ -293,7 +295,6 @@ void men_bathroom_worker_entry_point() {
 
   user = SLIST_FIRST(&men_restroom_vip_queue);
   while (user) {
-    user->left_state = QUIT;
     sem_post(&user->semaphore);
 
     sem_wait(&user_done_men_sem);
@@ -424,7 +425,7 @@ void women_bathroom_worker_entry_point() {
     if (head != NULL) {
 
       // Chance de 1 em 1000 de haver um acidente
-      if (rand() % 1000 == 0) {
+      if (should_have_accident()) {
         head->left_state = ACCIDENT;
       }
 
@@ -437,7 +438,7 @@ void women_bathroom_worker_entry_point() {
       // User a sair da casa de banho
 
       number_of_people_in_women_bahrooms--;
-      
+
       sem_post(&worker_done_women_sem);
 
       pthread_mutex_lock(&women_queue_mutex);
@@ -445,36 +446,38 @@ void women_bathroom_worker_entry_point() {
       // Rola uma chance para que, individualmente, todos os utilizadores, menos
       // os no início das filas de espera, desistam das filas de espera
 
-      for (struct queue_item *it = women_restroom_queue.slh_first; it;
-	   it = it->entries.sle_next) {
+      if (women_restroom_queue.slh_first != NULL) {
+        for (struct queue_item *it = women_restroom_queue.slh_first; it;
+             it = it->entries.sle_next) {
+          if (should_quit_attraction()&& it->entries.sle_next) {
+            struct queue_item *delete_node = it->entries.sle_next;
 
-        if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
-          struct queue_item *delete_node = it->entries.sle_next;
+            it->entries.sle_next = it->entries.sle_next->entries.sle_next;
 
-          it->entries.sle_next = it->entries.sle_next->entries.sle_next;
+            delete_node->left_state = QUIT;
+            sem_post(&delete_node->semaphore);
 
-          delete_node->left_state = QUIT;
-	  sem_post(&delete_node->semaphore);
-
-          sem_wait(&user_done_women_sem);
-	  sem_post(&worker_done_women_sem);
+            sem_wait(&user_done_women_sem);
+            sem_post(&worker_done_women_sem);
+          }
         }
       }
 
-      for (struct queue_item *it = women_restroom_vip_queue.slh_first; it;
-	   it = it->entries.sle_next) {
+      if (women_restroom_vip_queue.slh_first != NULL){
+        for (struct queue_item *it = women_restroom_vip_queue.slh_first; it;
+	     it = it->entries.sle_next) {
+	  if (should_quit_attraction()&& it->entries.sle_next) {
+	    struct queue_item *delete_node = it->entries.sle_next;
 
-	if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
-	  struct queue_item *delete_node = it->entries.sle_next;
+            it->entries.sle_next = it->entries.sle_next->entries.sle_next;
 
-	  it->entries.sle_next = it->entries.sle_next->entries.sle_next;
+            delete_node->left_state = QUIT;
+            sem_post(&delete_node->semaphore);
 
-          delete_node->left_state = QUIT;
-          sem_post(&delete_node->semaphore);
-
-          sem_wait(&user_done_women_sem);
-	  sem_post(&worker_done_women_sem);
-	}
+            sem_wait(&user_done_women_sem);
+            sem_post(&worker_done_women_sem);
+          }
+        }
       }
       pthread_mutex_unlock(&women_queue_mutex);
     }
@@ -485,7 +488,6 @@ void women_bathroom_worker_entry_point() {
   // Libertar todos os utilizadores da lista de espera normal
   while (user != NULL) {
     pthread_mutex_lock(&women_queue_mutex);
-    user->left_state = QUIT;
     sem_post(&user->semaphore);
 
     sem_wait(&user_done_women_sem);
@@ -499,7 +501,6 @@ void women_bathroom_worker_entry_point() {
   user = SLIST_FIRST(&women_restroom_vip_queue);
   while (user != NULL) {
     pthread_mutex_lock(&women_queue_mutex);
-    user->left_state = QUIT;
     sem_post(&user->semaphore);
 
     sem_wait(&user_done_women_sem);

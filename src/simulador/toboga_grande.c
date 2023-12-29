@@ -62,35 +62,37 @@ void tobogan_grande_worker_entry_point(int* communication_socket){
     // Rola uma chance para que, individualmente, todos os utilizadores
     // desistam das filas de espera, menos os que estão no início das filas
 
-    for (struct queue_item *it = tobogan_grande_queue.slh_first; it;
-	 it = it->entries.sle_next) {
-      if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
-	struct queue_item *delete_node = it->entries.sle_next;
+    if (tobogan_grande_queue.slh_first != NULL)
+      for (struct queue_item *it = tobogan_grande_queue.slh_first; it;
+	   it = it->entries.sle_next) {
+        if (should_quit_attraction() && it->entries.sle_next) {
+          struct queue_item *delete_node = it->entries.sle_next;
 
-        it->entries.sle_next = it->entries.sle_next->entries.sle_next;
+          it->entries.sle_next = it->entries.sle_next->entries.sle_next;
 
-        delete_node->left_state = QUIT;
-        sem_post(&delete_node->semaphore);
+          delete_node->left_state = QUIT;
+          sem_post(&delete_node->semaphore);
 
-        sem_wait(&user_done_tobogan_grande_sem);
-        sem_post(&worker_done_tobogan_grande_sem);
+          sem_wait(&user_done_tobogan_grande_sem);
+          sem_post(&worker_done_tobogan_grande_sem);
+        }
       }
-    }
 
-    for (struct queue_item *it = tobogan_grande_vip_queue.slh_first; it;
-	 it = it->entries.sle_next) {
-      if (rand() % 20 == 0 && it->entries.sle_next != NULL) {
-        struct queue_item *delete_node = it->entries.sle_next;
+    if (tobogan_grande_vip_queue.slh_first != NULL)
+      for (struct queue_item *it = tobogan_grande_vip_queue.slh_first; it;
+	   it = it->entries.sle_next) {
+        if (should_quit_attraction() && it->entries.sle_next) {
+          struct queue_item *delete_node = it->entries.sle_next;
 
-        it->entries.sle_next = it->entries.sle_next->entries.sle_next;
+          it->entries.sle_next = it->entries.sle_next->entries.sle_next;
 
-        delete_node->left_state = QUIT;
-        sem_post(&delete_node->semaphore);
+          delete_node->left_state = QUIT;
+          sem_post(&delete_node->semaphore);
 
-        sem_wait(&user_done_tobogan_grande_sem);
-        sem_post(&worker_done_tobogan_grande_sem);
+          sem_wait(&user_done_tobogan_grande_sem);
+          sem_post(&worker_done_tobogan_grande_sem);
+        }
       }
-    }
     //----------------- FIM DESISTÊNCIAS ------------------
 
     /* pthread_mutex_unlock(&tobogan_grande_mutex); */
@@ -98,7 +100,7 @@ void tobogan_grande_worker_entry_point(int* communication_socket){
     if (head != NULL) {
 
       // Chance de 1 em 1000 de haver um acidente
-      if (rand() % 1000 == 0) {
+      if (should_have_accident()) {
         head->left_state = ACCIDENT;
       }
 
@@ -106,7 +108,7 @@ void tobogan_grande_worker_entry_point(int* communication_socket){
 
       // Acionar segundo utilizador a ter um acidentte, ou entrar na atração
       if (tail) {
-        if (rand() % 1000 == 0) {
+        if (should_have_accident()) {
           tail->left_state = ACCIDENT;
         }
 
@@ -142,7 +144,6 @@ void tobogan_grande_worker_entry_point(int* communication_socket){
   struct queue_item *user = NULL;
 
   while (user) {
-    user->left_state = QUIT;
     sem_post(&user->semaphore);
 
     sem_wait(&user_done_tobogan_grande_sem);
@@ -153,7 +154,6 @@ void tobogan_grande_worker_entry_point(int* communication_socket){
 
   user = SLIST_FIRST(&tobogan_grande_vip_queue);
   while (user) {
-    user->left_state = QUIT;
     sem_post(&user->semaphore);
 
     sem_wait(&user_done_tobogan_grande_sem);

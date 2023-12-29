@@ -19,6 +19,14 @@ extern pthread_mutex_t global_user_thread_list_mutex;
 
 extern unsigned long *global_user_thread_list;
 
+// Parâmetros que são carregados no início do simulação, antes do utilizador ser
+// criado;
+extern int
+    have_accident_parameter; // Define a % chance (0 a 100) de haver um acidente
+
+extern int quit_attraction_parameter; // Define a % chance (0 a 100) de um
+                                      // user desistir de uma fila de espera
+
 void exit_park(user_info* info){
   pthread_mutex_lock(&global_user_thread_list_mutex);
   for (int i = 0; i < MAX_THREADS; i++) {
@@ -118,4 +126,17 @@ void thread_send_message_to_socket(int *socket, MessageType type,
 
 bool is_vip(user_info* info){
   return info->deficient || info->age > 69;
+}
+
+bool should_have_accident(){
+  srand(time(NULL));
+  int random = rand() % 100;
+
+  return random < have_accident_parameter;
+}
+
+bool should_quit_attraction(){
+  srand(time(NULL));
+
+  return rand() % 100 < quit_attraction_parameter;
 }

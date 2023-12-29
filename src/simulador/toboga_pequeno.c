@@ -1,6 +1,7 @@
 
 #include "slist.h"
 #include "../common/common.h"
+#include "user.h"
 #include <assert.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -55,7 +56,7 @@ void tobogan_pequeno_worker_entry_point() {
 
     pthread_mutex_lock(&tobogan_pequeno_mutex);
       // Chance de 1 em 1000 de haver um acidente
-      if (rand() % 1000 == 0) {
+      if (should_have_accident()) {
         head->left_state = ACCIDENT;
       }
 
@@ -73,33 +74,37 @@ void tobogan_pequeno_worker_entry_point() {
       // Sempre que um utilizador sai na casa de banho, rolar uma chance de os
       // outros desistirem
       pthread_mutex_lock(&tobogan_pequeno_mutex);
-      struct queue_item *user = NULL;
-      if (!(SLIST_EMPTY(&tobogan_pequeno_queue))) {
-        SLIST_FOREACH(user, &tobogan_pequeno_queue, entries) {
-	  if (rand() % 20 == 0 && user != NULL) {
-	    SLIST_REMOVE(&tobogan_pequeno_queue, user, queue_item, entries);
-	    user->left_state = QUIT;
-	    sem_post(&user->semaphore);
+      if (tobogan_pequeno_vip_queue.slh_first != NULL)
+	for (struct queue_item *it = tobogan_pequeno_vip_queue.slh_first; it;
+	     it = it->entries.sle_next) {
+          if (should_quit_attraction() && it->entries.sle_next) {
+            struct queue_item *delete_node = it->entries.sle_next;
 
-	    sem_wait(&user_done_tobogan_pequeno_sem);
-	    sem_post(&worker_done_tobogan_pequeno_sem);
-	  }
-	}
-      }
+            it->entries.sle_next = it->entries.sle_next->entries.sle_next;
 
-      user = NULL;
-      if (!(SLIST_EMPTY(&tobogan_pequeno_vip_queue))) {
-	SLIST_FOREACH(user, &tobogan_pequeno_vip_queue, entries) {
-	  if (rand() % 20 == 0 && user != NULL) {
-	    SLIST_REMOVE(&tobogan_pequeno_vip_queue, user, queue_item, entries);
-            user->left_state = QUIT;
-            sem_post(&user->semaphore);
+            delete_node->left_state = QUIT;
+            sem_post(&delete_node->semaphore);
 
             sem_wait(&user_done_tobogan_pequeno_sem);
             sem_post(&worker_done_tobogan_pequeno_sem);
           }
         }
-      }
+
+      if (tobogan_pequeno_queue.slh_first != NULL)
+	for (struct queue_item *it = tobogan_pequeno_queue.slh_first; it;
+	     it = it->entries.sle_next) {
+          if (should_quit_attraction() && it->entries.sle_next) {
+            struct queue_item *delete_node = it->entries.sle_next;
+
+            it->entries.sle_next = it->entries.sle_next->entries.sle_next;
+
+            delete_node->left_state = QUIT;
+            sem_post(&delete_node->semaphore);
+
+            sem_wait(&user_done_tobogan_pequeno_sem);
+            sem_post(&worker_done_tobogan_pequeno_sem);
+          }
+        }
       pthread_mutex_unlock(&tobogan_pequeno_mutex);
     }
   };
@@ -108,7 +113,6 @@ void tobogan_pequeno_worker_entry_point() {
 
   // Libertar todos os utilizadores na fila de espera quando o parque fecha
   while (user) {
-    user->left_state = QUIT;
     sem_post(&user->semaphore);
 
     sem_wait(&user_done_tobogan_pequeno_sem);
@@ -119,7 +123,6 @@ void tobogan_pequeno_worker_entry_point() {
 
   user = SLIST_FIRST(&tobogan_pequeno_vip_queue);
   while (user) {
-    user->left_state = QUIT;
     sem_post(&user->semaphore);
 
     sem_wait(&user_done_tobogan_pequeno_sem);

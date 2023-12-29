@@ -39,4 +39,8 @@ bool is_vip(user_info* info);
 
 void exit_park(user_info* info);
 
+bool should_have_accident();
+
+bool should_quit_attraction();
+
 #endif

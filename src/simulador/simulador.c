@@ -52,7 +52,13 @@ int global_user_counter = 0;
 unsigned long *global_user_thread_list = NULL;
 pthread_mutex_t global_user_thread_list_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-int main(int argc, char* argv[]) {
+// Define a % chance (0 a 100) de haver um acidente
+int have_accident_parameter = -1;
+
+// Define a % chance (0 a 100) de um user desistir de uma fila de espera
+int quit_attraction_parameter = -1;
+
+int main(int argc, char *argv[]) {
 
   if (argc < 2) {
     printf("ERRO: Não foi especificado um ficheiro de configuração");
@@ -64,10 +70,24 @@ int main(int argc, char* argv[]) {
 
   // Carregar parametros
   configuration conf = extract_config_from_file(argv[1]);
-  conf_parameter* num_users_inicial = get_parameter_from_configuration(&conf, new_str("users"));
+  conf_parameter *num_users_inicial =
+      get_parameter_from_configuration(&conf, new_str("users"));
+
+  assert(num_users_inicial != NULL);
+
+  conf_parameter *accident_parameter =
+      get_parameter_from_configuration(&conf, new_str("accident"));
+
+  assert(accident_parameter != NULL);
+  have_accident_parameter = accident_parameter->i;
+
+  conf_parameter *quit_parameter =
+      get_parameter_from_configuration(&conf, new_str("quit"));
+
+  assert(quit_parameter != NULL);
+  quit_attraction_parameter = quit_parameter->i;
 
   assert(num_users_inicial->i <= MAX_THREADS);
-
 
   int client_socket, len;
   struct sockaddr_un saun;
@@ -187,7 +207,6 @@ int main(int argc, char* argv[]) {
   for (int i = 0; i < MAX_THREADS; i++) {
     if (global_user_thread_list[i] != 0){
 	pthread_cancel(global_user_thread_list[i]);
-	pthread_join(global_user_thread_list[i], NULL);
     }
   }
 

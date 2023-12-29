@@ -91,10 +91,7 @@ conf_parameter *read_parameter_from_line(char *line) {
   char* end;
   errno = 0;
   long extracted_int = strtoll(param->str.value, &end, 10);
-  if (extracted_int != 0L){
-    // Não houve nenhum erro na conversão, atualizar o valor do parametro e devolver
-    param->i = extracted_int;
-  }
+  param->i = extracted_int;
 
   return param;
 };
