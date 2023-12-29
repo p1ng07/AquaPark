@@ -15,6 +15,7 @@
 #define TOBOGAN_PEQUENO_THREAD 5
 #define TOBOGAN_GRANDE_THREAD 6
 
+#define FICHEIRO_GERAL_EVENTOS "eventos/entradas_saidas_acidentes.txt"
 #define FICHEIRO_PISCINA_EVENTOS "eventos/piscina.txt"
 #define FICHEIRO_PISCINA_CRIANCAS_EVENTOS "eventos/piscina_criancas.txt"
 #define FICHEIRO_TOBOGAN_GRANDE_EVENTOS "eventos/tobogan_grande.txt"
@@ -23,5 +24,9 @@
 #define FICHEIRO_WC_MEN_EVENTOS "eventos/wc_men.txt"
 #define FICHEIRO_WC_WOMEN_EVENTOS "eventos/wc_women.txt"
 #define FICHEIRO_BAR_EVENTOS "eventos/bar.txt"
+
+#define MAX_CAPACITY_BAR 20
+#define MAX_CAPACITY_PISCINA 40
+#define MAX_CAPACITY_PISCINA_CRIANCAS 25
 
 #endif

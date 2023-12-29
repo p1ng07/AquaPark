@@ -20,24 +20,45 @@ typedef enum MType {
   ENWCD, // User entrou na fila de espera wc de deficientes, formato: "id,vip",
          // vip = 1 signifca que user que entrou é vip
   EXWCD, // User usou e saiu da wc de deficientes, formato: "id,vip"
+  DESIS_WCD, // Um user desistiu da fila de espera da wc deficientes, formato:
+             // "id"
 
   ENWCH, // User entrou na fila de espera da wc de homens, formato: "id,vip",
          // vip = 1 signifca que user que entrou é vip
   EXWCH, // User usou e saiusaiu da wc de homens, formato: "id,vip"
+  DESIS_WCH, // Um user desistiu da fila de espera do togoba pequeno, formato:
+             // "id"
 
   ENWCW, // User entrou na fila de espera da wc de mulheres, formato: "id,vip",
          // vip = 1 signifca que user que entrou é vip
   EXWCW, // User usou e saiu da wc de mulheres, formato: "id,vip"
+  DESIS_WCW, // Um user desistiu da fila de espera da WC women, formato: "id"
 
-  ENTBP, // User entrou na fila de espera do  tobogan pequeno, formato: "id,vip",
-         // vip = 1 signifca que user que entrou é vip
-  EXTBP, // User usou e saiu no tobogan pequeno, formato: "id,vip"
+  ENTBP, // User entrou na fila de espera do  tobogan pequeno, formato:
+         // "id,vip", vip = 1 signifca que user que entrou é vip
+  EXTBP,     // User usou e saiu no tobogan pequeno, formato: "id,vip"
+  DESIS_TBP, // Um user desistiu da fila de espera do togoba pequeno, formato:
+             // "id"
+
+  ENBAR,    // User entrou no bar
+  EXBAR,    // User usou e saiu do bar
+
+  ENPIS,    // User entrou na piscina
+  EXPIS,    // User usou e saiu da piscina
+  FAIL_PIS, // User tentou entrar na piscina mas já estava no máximo
+
+  ENPIS_CRIANCAS,    // User entrou na piscina das crianças
+  EXPIS_CRIANCAS,    // User usou e saiu da piscina das crianças
+  FAIL_PIS_CRIANCAS, // User tentou entrar na piscina das crianças mas já estava
+		     // no máximo
 
   ENTBG, // User entrou na fila de espera do tobogan grande, formato: "id,vip"
          // = 1 signifca que user que entrou é vip
   EXTBG, // User usou e saiu do toboga grande, formato: "id,vip"
   DUTBG, // Ocorreu uma viagem de dois users no toboga grande
   INTBG, // Ocorreu uma viagem de um user no toboga grande
+  DESIS_TBG, // Um user desistiu da fila de espera do togoba grande, formato:
+             // "id"
 } MessageType;
 
 typedef struct {
@@ -50,13 +71,8 @@ typedef struct {
 
 typedef struct {
   int *fd_cliente;
-  char *file_eventos;
   stats_info *stats;
 } communication_thread_args;
-
-// Macro que recebe um communication type e transforma numa string
-#define string_from_com_type(TYPE) #TYPE
-#define xstring_from_com_type(TYPE) string_from_com_type(TYPE)
 
 /*
   Summary: Recebe e interpreta mensagens do simulador.

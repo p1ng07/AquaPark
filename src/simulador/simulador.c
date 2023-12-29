@@ -25,9 +25,6 @@
 void wait_for_begin_message(int socket) {
   char buffer[MAX_MESSAGE_BUFFER_SIZE];
 
-  // TODO Adicionar um mecanismo para parar esta thread, provavelmente com
-  // sinais
-
   while (1) {
     // Ler mensagem com MAX_MESSAGE_BUFFER_SIZE de tamanho
     int n = readn(socket, buffer, MAX_MESSAGE_BUFFER_SIZE);
@@ -45,9 +42,6 @@ void wait_for_begin_message(int socket) {
 }
 
 bool parque_aberto = true;
-
-  // Contador que mantém o número atual de utilizadores no parque
-int global_user_counter = 0;
 
 unsigned long *global_user_thread_list = NULL;
 pthread_mutex_t global_user_thread_list_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -76,13 +70,13 @@ int main(int argc, char *argv[]) {
   assert(num_users_inicial != NULL);
 
   conf_parameter *accident_parameter =
-      get_parameter_from_configuration(&conf, new_str("accident"));
+      get_parameter_from_configuration(&conf, new_str("accident_chance"));
 
   assert(accident_parameter != NULL);
   have_accident_parameter = accident_parameter->i;
 
   conf_parameter *quit_parameter =
-      get_parameter_from_configuration(&conf, new_str("quit"));
+      get_parameter_from_configuration(&conf, new_str("quit_chance"));
 
   assert(quit_parameter != NULL);
   quit_attraction_parameter = quit_parameter->i;
@@ -170,14 +164,19 @@ int main(int argc, char *argv[]) {
 
   conf_parameter* tempo_simulacao = get_parameter_from_configuration(&conf, new_str("tempo_simulacao"));
 
+  // Expressa de quantos em quantos micro segundos um novo utilizador deve
+  // tentar entrar no parque
+  conf_parameter *ritmo_chegada =
+      get_parameter_from_configuration(&conf, new_str("ritmo_chegada"));
+
+  assert(ritmo_chegada != NULL);
+
   do {
     time(&atual);
 
     pthread_mutex_lock(&global_user_thread_list_mutex);
     for (int i = 0; i < MAX_THREADS; i++) {
       // Chance de 50% de tentar criar um user novo no parque
-      if(rand() % 2 == 0)
-	break;
 
       if(global_user_thread_list[i] == 0){
 	user_info *info_send = malloc(sizeof(user_info));
@@ -198,6 +197,8 @@ int main(int argc, char *argv[]) {
     }
     pthread_mutex_unlock(&global_user_thread_list_mutex);
 
+    usleep(ritmo_chegada->i);
+
   } while (difftime(atual, inicio) < tempo_simulacao->i);
 
   parque_aberto = false;
@@ -206,7 +207,7 @@ int main(int argc, char *argv[]) {
   // Forçar que as threads acabem
   for (int i = 0; i < MAX_THREADS; i++) {
     if (global_user_thread_list[i] != 0){
-	pthread_cancel(global_user_thread_list[i]);
+      pthread_cancel(global_user_thread_list[i]);
     }
   }
 

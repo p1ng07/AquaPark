@@ -2,6 +2,9 @@
 #include "../common/common.h"
 #include "../common/communication.h"
 #include "bathrooms.h"
+#include "bar.h"
+#include "piscina.h"
+#include "piscina_criancas.h"
 #include "toboga_grande.h"
 #include "toboga_pequeno.h"
 #include <assert.h>
@@ -58,8 +61,6 @@ void user_entry_point(user_info* info){
 
   thread_send_message_to_socket(info->socket_monitor, ENTER, buffer);
 
-  // TODO Handle if park is closed (simple queue)
-
   while (1) {
     // Fazendo coisas dentro do parque
     bool accident = try_enter_attractions(info);
@@ -74,8 +75,6 @@ void user_entry_point(user_info* info){
 }
 
 bool try_enter_attractions(user_info *info) {
-  // TODO adicionar diversões
-
   // Escolher um número de 0 a 5, no caso de um adulto, e de 0 a 6 no caso de
   // uma criança
   int attraction = rand() % ((info->age > 12) ? 5 : 6);
@@ -83,25 +82,23 @@ bool try_enter_attractions(user_info *info) {
 
   switch (attraction) {
   case 0: {
-    // TODO Bar
+    return bar(info);
   } break;
   case 1: {
-    // TODO Piscina Grande
+    return piscina(info);
   } break;
   case 2: {
-    // TODO Toboga grande
     return tobogan_grande(info);
   } break;
   case 3: {
-    // TODO Toboga pequena
     return tobogan_pequeno(info);
   } break;
   case 4: {
-    // TODO casas de banho
     return enter_bathrooms(info);
   } break;
   case 5: {
     // Piscina das crianças
+    return piscina_criancas(info);
   } break;
   default: {
     assert(0);
@@ -109,8 +106,6 @@ bool try_enter_attractions(user_info *info) {
   }
   }
 
-  // TODO Sempre que um user estiver numa atração, deve rolar uma chance de ele
-  // ter um acidente e ter de sair do parque, returnando true nesta função
   return false;
 }
 
@@ -138,5 +133,5 @@ bool should_have_accident(){
 bool should_quit_attraction(){
   srand(time(NULL));
 
-  return rand() % 100 < quit_attraction_parameter;
+  return (rand() % 100) < quit_attraction_parameter;
 }

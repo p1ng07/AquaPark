@@ -34,3 +34,6 @@ $(OBJ_DIR_MONIT)/%.o: $(MONIT_SRC)/%.c | $(OBJ_DIR_MONIT)
 
 $(OBJ_DIR_SIMUL)/%.o: $(SIMUL_SRC)/%.c | $(OBJ_DIR_SIMUL) 
 	gcc $(LIBS) -g -Wall -c $< -o $@
+
+init:
+	mkdir bin

@@ -1,5 +1,4 @@
 #include "communication.h"
-#include "../monitor/events.h"
 #include "common.h"
 #include "string.h"
 #include <assert.h>
@@ -21,17 +20,17 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
 
   // Abrir handlers para ficheiros de eventos, um por cada atração, e um para
   // eventos gerais
-  FILE *file_eventos = fopen(args->file_eventos, "a");
+  FILE *file_eventos = fopen(FICHEIRO_GERAL_EVENTOS, "w");
 
-  FILE *piscina_eventos = fopen(FICHEIRO_PISCINA_EVENTOS, "a");
+  FILE *piscina_eventos = fopen(FICHEIRO_PISCINA_EVENTOS, "w");
   FILE *piscina_criancas_eventos =
-      fopen(FICHEIRO_PISCINA_CRIANCAS_EVENTOS, "a");
-  FILE *tobogan_grande_eventos = fopen(FICHEIRO_TOBOGAN_GRANDE_EVENTOS, "a");
-  FILE *tobogan_pequeno_eventos = fopen(FICHEIRO_TOBOGAN_PEQUENO_EVENTOS, "a");
-  FILE *wc_def_eventos = fopen(FICHEIRO_WC_DEF_EVENTOS, "a");
-  FILE *wc_men_eventos = fopen(FICHEIRO_WC_MEN_EVENTOS, "a");
-  FILE *wc_women_eventos = fopen(FICHEIRO_WC_WOMEN_EVENTOS, "a");
-  FILE *bar_eventos = fopen(FICHEIRO_BAR_EVENTOS, "a");
+      fopen(FICHEIRO_PISCINA_CRIANCAS_EVENTOS, "w");
+  FILE *tobogan_grande_eventos = fopen(FICHEIRO_TOBOGAN_GRANDE_EVENTOS, "w");
+  FILE *tobogan_pequeno_eventos = fopen(FICHEIRO_TOBOGAN_PEQUENO_EVENTOS, "w");
+  FILE *wc_def_eventos = fopen(FICHEIRO_WC_DEF_EVENTOS, "w");
+  FILE *wc_men_eventos = fopen(FICHEIRO_WC_MEN_EVENTOS, "w");
+  FILE *wc_women_eventos = fopen(FICHEIRO_WC_WOMEN_EVENTOS, "w");
+  FILE *bar_eventos = fopen(FICHEIRO_BAR_EVENTOS, "w");
 
   if (piscina_eventos == NULL || piscina_criancas_eventos == NULL ||
       tobogan_grande_eventos == NULL || tobogan_pequeno_eventos == NULL ||
@@ -40,11 +39,6 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
     printf("Não foi possível abrir os ficheiros de eventos para escrita.");
     exit(1);
   }
-
-    // TODO Adicionar um mecanismo para parar esta thread, provavelmente com
-    // sinais
-    // Ideia: Receber um SIGUSRX que muda a variavel de controlo do while para
-    // false
 
     while (1) {
       // Ler mensagem com MAX_MESSAGE_BUFFER_SIZE de tamanho
@@ -96,17 +90,6 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
           break;
         }
 
-        case DESIS: {
-          // User abandoned a waiting queue
-          char string[100];
-          snprintf(string, 100,
-                   "Abandonment: User %d abandoned their waiting queue.\n",
-                   atoi(message));
-          fputs(string, file_eventos);
-          args->stats->desistencias++;
-          break;
-        }
-
         case ENWCW: {
           // User entered the women bathroom
           char string[100];
@@ -121,6 +104,16 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
           // User exited the women bathroom
           char string[100];
           snprintf(string, 100, "WOMEN WC: User %d used and exited.\n",
+                   atoi(message));
+          fputs(string, wc_women_eventos);
+          break;
+        }
+        case DESIS_WCW: {
+          args->stats->desistencias++;
+          // User abandoned a waiting queue
+          char string[100];
+          snprintf(string, 100,
+                   "WC Women: User %d abandoned their waiting queue.\n",
                    atoi(message));
           fputs(string, wc_women_eventos);
           break;
@@ -144,6 +137,16 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
           fputs(string, wc_men_eventos);
           break;
         }
+        case DESIS_WCH: {
+          args->stats->desistencias++;
+          // User abandoned a waiting queue
+          char string[100];
+          snprintf(string, 100,
+                   "WC Men: User %d abandoned their waiting queue.\n",
+                   atoi(message));
+          fputs(string, wc_men_eventos);
+          break;
+        }
 
         case ENWCD: {
           // User entered the def bathroom
@@ -158,6 +161,16 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
           // User exited the disabled bathroom
           char string[100];
           snprintf(string, 100, "Disabled WC: User %d used and exited.\n",
+                   atoi(message));
+          fputs(string, wc_def_eventos);
+          break;
+        }
+        case DESIS_WCD: {
+          args->stats->desistencias++;
+          // User abandoned a waiting queue
+          char string[100];
+          snprintf(string, 100,
+                   "WC Def: User %d abandoned their waiting queue.\n",
                    atoi(message));
           fputs(string, wc_def_eventos);
           break;
@@ -199,6 +212,18 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
           fputs(string, tobogan_pequeno_eventos);
           break;
         }
+
+        case DESIS_TBP: {
+          args->stats->desistencias++;
+          // User abandoned a waiting queue
+          char string[100];
+          snprintf(string, 100,
+                   "Toboga pequeno: User %d abandoned their waiting queue.\n",
+                   atoi(message));
+          fputs(string, tobogan_pequeno_eventos);
+          break;
+        }
+
         case ENTBG: {
           /*User entrou na fila de espera do tobogan grande, formato : "id,vip",
            * vip = 1 signifca que user que entrou é vip
@@ -237,6 +262,17 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
           fputs(string, tobogan_grande_eventos);
           break;
         }
+        case DESIS_TBG: {
+          args->stats->desistencias++;
+          // User abandoned a waiting queue
+          char string[100];
+          snprintf(string, 100,
+                   "Toboga pequeno: User %d abandoned their waiting queue.\n",
+                   atoi(message));
+          fputs(string, tobogan_grande_eventos);
+          break;
+        }
+
         case DUTBG: {
           // Ocorreu uma viagem de dois users no toboga grande
           char string[100];
@@ -252,6 +288,78 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
           snprintf(string, 100,
                    "Toboga grande: Ocorreu uma viagem com um utilizador.\n");
           fputs(string, tobogan_grande_eventos);
+          break;
+        }
+        case ENBAR: {
+          // User entrou no bar
+          char string[100];
+          int id = atoi(strtok(message, ","));
+          snprintf(string, 100,
+                   "Bar: User %d entered.\n", id);
+          fputs(string, bar_eventos);
+          break;
+        }
+        case EXBAR: {
+          // User entrou no bar
+          char string[100];
+          int id = atoi(strtok(message, ","));
+          snprintf(string, 100,
+                   "Bar: User %d exited.\n", id);
+          fputs(string, bar_eventos);
+          break;
+        }
+        case ENPIS: {
+          // User entrou na piscina grande
+          char string[100];
+          int id = atoi(strtok(message, ","));
+          snprintf(string, 100,
+                   "Piscina: User %d entered.\n", id);
+          fputs(string, piscina_eventos);
+          break;
+        }
+        case EXPIS: {
+          // User entrou na piscina grande
+          char string[100];
+          int id = atoi(strtok(message, ","));
+          snprintf(string, 100,
+                   "Piscina: User %d exited.\n", id);
+          fputs(string, piscina_eventos);
+          break;
+        }
+        case FAIL_PIS: {
+          // User tentou entrar na piscina mas já estava cheia
+          char string[100];
+          int id = atoi(strtok(message, ","));
+          snprintf(string, 100,
+                   "Piscina User %d tried entering.\n", id);
+          fputs(string, piscina_eventos);
+          break;
+        }
+	case ENPIS_CRIANCAS: {
+	  // User entrou na piscina grande
+          char string[100];
+          int id = atoi(strtok(message, ","));
+          snprintf(string, 100,
+                   "Piscina criancas: User %d entered.\n", id);
+          fputs(string, piscina_criancas_eventos);
+          break;
+        }
+        case EXPIS_CRIANCAS: {
+          // User entrou na piscina grande
+          char string[100];
+          int id = atoi(strtok(message, ","));
+          snprintf(string, 100,
+                   "Piscina criancas: User %d exited.\n", id);
+          fputs(string, piscina_criancas_eventos);
+          break;
+        }
+        case FAIL_PIS_CRIANCAS: {
+          // User tentou entrar na piscina mas já estava cheia
+          char string[100];
+          int id = atoi(strtok(message, ","));
+          snprintf(string, 100,
+                   "Piscina criancas: User %d tried entering.\n", id);
+          fputs(string, piscina_criancas_eventos);
           break;
         }
         case ERROR: {

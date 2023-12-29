@@ -200,7 +200,7 @@ bool tobogan_grande(user_info *info){
   if (entry->left_state == RUNNING)
     type = EXTBG; // User usou e saiu do tobogan grande
   else if (entry->left_state == QUIT)
-    type = DESIS; // User desistiu da fila de espera
+    type = DESIS_TBG; // User desistiu da fila de espera
   else if (entry->left_state == ACCIDENT)
     type = ACCID; // User teve um acidente e tem que sair do parque
 

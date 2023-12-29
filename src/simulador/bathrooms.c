@@ -20,7 +20,6 @@ bool enter_bathrooms(user_info *info) {
   if (info->deficient) {
     accident = disabled_wc(info);
   } else if (info->is_man) {
-    // TODO Casas de banho duplas de homens
     // Tentar usar ao máximo o que já foi feito
     accident = men_wc(info);
   } else if (!info->is_man) {
@@ -52,7 +51,6 @@ void disabled_bathroom_worker_entry_point() {
 
   SLIST_INIT(&deficient_restroom_queue);
 
-  // TODO remove busy waiting
   while (parque_aberto) {
     pthread_mutex_lock(&deficient_queue_mutex);
 
@@ -145,7 +143,7 @@ bool disabled_wc(user_info *info) {
   if (entry->left_state == RUNNING)
     type = EXWCD; // User usou e saiu da casa de banho
   else if (entry->left_state == QUIT)
-    type = DESIS; // User desistiu da fila de espera
+    type = DESIS_WCD; // User desistiu da fila de espera
   else if (entry->left_state == ACCIDENT)
     type = ACCID; // User teve um acidente e tem que sair do parque
 
@@ -197,7 +195,6 @@ void men_bathroom_worker_entry_point() {
   SLIST_INIT(&men_restroom_queue);
   SLIST_INIT(&men_restroom_vip_queue);
 
-  // TODO remove busy waiting
   while (parque_aberto) {
 
     // Não libertar pessoas da fila se existem mais que duas pessoas nas casas
@@ -239,10 +236,10 @@ void men_bathroom_worker_entry_point() {
       number_of_people_in_men_bahrooms--;
       // Sempre que um utilizador sai na casa de banho, rolar uma chance de os
       // outros desistirem
-      // TODO Desistências
 
       sem_post(&worker_done_men_sem);
 
+      //--------------------DESISTENCIAS-----------------------
       // Rola uma chance para que, individualmente, todos os utilizadores, menos
       // os no início das filas de espera, desistam das filas de espera
       pthread_mutex_lock(&men_queue_mutex);
@@ -343,7 +340,7 @@ bool men_wc(user_info *info) {
   if (entry->left_state == RUNNING)
     type = EXWCH; // User usou e saiu da casa de banho
   else if (entry->left_state == QUIT)
-    type = DESIS; // User desistiu da fila de espera
+    type = DESIS_WCH; // User desistiu da fila de espera
   else if (entry->left_state == ACCIDENT)
     type = ACCID; // User teve um acidente e tem que sair do parque
 
@@ -398,7 +395,6 @@ void women_bathroom_worker_entry_point() {
   SLIST_INIT(&women_restroom_queue);
   SLIST_INIT(&women_restroom_vip_queue);
 
-  // TODO remove busy waiting
   while (parque_aberto) {
 
     // Não libertar pessoas da fila se existem mais que duas pessoas nas casas
@@ -549,7 +545,7 @@ bool women_wc(user_info *info) {
   if (entry->left_state == RUNNING)
     type = EXWCW; // User usou e saiu da casa de banho
   else if (entry->left_state == QUIT)
-    type = DESIS; // User desistiu da fila de espera
+    type = DESIS_WCW; // User desistiu da fila de espera
   else if (entry->left_state == ACCIDENT)
     type = ACCID; // User teve um acidente e tem que sair do parque
 

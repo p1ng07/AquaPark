@@ -177,7 +177,7 @@ bool tobogan_pequeno(user_info *info) {
   if (entry->left_state == RUNNING)
     type = EXTBP; // User usou e saiu da casa de banho
   else if (entry->left_state == QUIT)
-    type = DESIS; // User desistiu da fila de espera
+    type = DESIS_TBP; // User desistiu da fila de espera
   else if (entry->left_state == ACCIDENT)
     type = ACCID; // User teve um acidente e tem que sair do parque
 
