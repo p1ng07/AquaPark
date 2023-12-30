@@ -37,3 +37,4 @@ $(OBJ_DIR_SIMUL)/%.o: $(SIMUL_SRC)/%.c | $(OBJ_DIR_SIMUL)
 
 init:
 	mkdir bin
+	mkdir eventos
