@@ -26,7 +26,7 @@ void wait_for_begin_message(int socket) {
 
   while (1) {
     // Ler mensagem com MAX_MESSAGE_BUFFER_SIZE de tamanho
-    int n = readn(socket, buffer, MAX_MESSAGE_BUFFER_SIZE);
+    readn(socket, buffer, MAX_MESSAGE_BUFFER_SIZE);
     // Ler código identificador do tipo de mensagem (primeiro carater da mensagem)
     int identifier = buffer[0];
 
