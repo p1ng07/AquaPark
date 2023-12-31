@@ -130,7 +130,7 @@ bool inline should_have_accident(){
   return random < have_accident_parameter;
 }
 
-bool inline should_quit_attraction(){
+bool inline should_quit_wait_queue(){
   srand(time(NULL));
 
   return (rand() % 100) < quit_attraction_parameter;

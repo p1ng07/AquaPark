@@ -78,7 +78,7 @@ void disabled_bathroom_worker_entry_point() {
       if (deficient_restroom_queue.slh_first != NULL) {
         for (struct queue_item *it = deficient_restroom_queue.slh_first; it;
              it = it->entries.sle_next) {
-          if (should_quit_attraction() && it->entries.sle_next) {
+          if (should_quit_wait_queue() && it->entries.sle_next) {
             struct queue_item *delete_node = it->entries.sle_next;
 
             it->entries.sle_next = it->entries.sle_next->entries.sle_next;
@@ -246,7 +246,7 @@ void men_bathroom_worker_entry_point() {
       if (men_restroom_queue.slh_first != NULL)
         for (struct queue_item *it = men_restroom_queue.slh_first; it;
              it = it->entries.sle_next) {
-          if (should_quit_attraction()&& it->entries.sle_next) {
+          if (should_quit_wait_queue()&& it->entries.sle_next) {
             struct queue_item *delete_node = it->entries.sle_next;
 
             it->entries.sle_next = it->entries.sle_next->entries.sle_next;
@@ -262,7 +262,7 @@ void men_bathroom_worker_entry_point() {
       if (men_restroom_vip_queue.slh_first != NULL)
         for (struct queue_item *it = men_restroom_vip_queue.slh_first; it;
              it = it->entries.sle_next) {
-          if (should_quit_attraction()&& it->entries.sle_next) {
+          if (should_quit_wait_queue()&& it->entries.sle_next) {
             struct queue_item *delete_node = it->entries.sle_next;
 
             it->entries.sle_next = it->entries.sle_next->entries.sle_next;
@@ -445,7 +445,7 @@ void women_bathroom_worker_entry_point() {
       if (women_restroom_queue.slh_first != NULL) {
         for (struct queue_item *it = women_restroom_queue.slh_first; it;
              it = it->entries.sle_next) {
-          if (should_quit_attraction()&& it->entries.sle_next) {
+          if (should_quit_wait_queue()&& it->entries.sle_next) {
             struct queue_item *delete_node = it->entries.sle_next;
 
             it->entries.sle_next = it->entries.sle_next->entries.sle_next;
@@ -462,7 +462,7 @@ void women_bathroom_worker_entry_point() {
       if (women_restroom_vip_queue.slh_first != NULL){
         for (struct queue_item *it = women_restroom_vip_queue.slh_first; it;
 	     it = it->entries.sle_next) {
-	  if (should_quit_attraction()&& it->entries.sle_next) {
+	  if (should_quit_wait_queue()&& it->entries.sle_next) {
 	    struct queue_item *delete_node = it->entries.sle_next;
 
             it->entries.sle_next = it->entries.sle_next->entries.sle_next;

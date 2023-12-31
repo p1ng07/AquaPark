@@ -41,6 +41,6 @@ void exit_park(user_info* info);
 
 bool should_have_accident();
 
-bool should_quit_attraction();
+bool should_quit_wait_queue();
 
 #endif
