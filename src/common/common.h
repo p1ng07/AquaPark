@@ -3,7 +3,7 @@
 
 #define ADDRESS_SOCKET "socket_address"
 #define MAX_MESSAGE_BUFFER_SIZE 200
-#define MAX_THREADS 400
+#define MAX_THREADS 500
 
 #define NUMBER_OF_WORKER_THREADS 7
 

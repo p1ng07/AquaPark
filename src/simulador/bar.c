@@ -29,7 +29,7 @@ bool bar(user_info* info){
   if(should_have_accident()){
     // User teve um acidente
     capacity_bar--;
-    thread_send_message_to_socket(info->socket_monitor, ACCID, buffer);
+    thread_send_message_to_socket(info->socket_monitor, ACCID_BAR, buffer);
     pthread_mutex_unlock(&trinco_bar);
 
     return true;

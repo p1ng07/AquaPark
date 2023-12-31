@@ -37,7 +37,7 @@ bool piscina_criancas(user_info* info){
   if(should_have_accident()){
     // User teve um acidente
     capacity_criancas--;
-    thread_send_message_to_socket(info->socket_monitor, ACCID, buffer);
+    thread_send_message_to_socket(info->socket_monitor, ACCID_PIS_CRIANCAS, buffer);
     pthread_mutex_unlock(&trinco_piscina_criancas);
 
     return true;

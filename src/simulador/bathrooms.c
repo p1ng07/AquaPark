@@ -145,7 +145,7 @@ bool disabled_wc(user_info *info) {
   else if (entry->left_state == QUIT)
     type = DESIS_WCD; // User desistiu da fila de espera
   else if (entry->left_state == ACCIDENT)
-    type = ACCID; // User teve um acidente e tem que sair do parque
+    type = ACCID_WCD; // User teve um acidente e tem que sair do parque
 
   // Enviar mensagem para o monitor
   thread_send_message_to_socket(info->socket_monitor, type, buffer);
@@ -342,7 +342,7 @@ bool men_wc(user_info *info) {
   else if (entry->left_state == QUIT)
     type = DESIS_WCH; // User desistiu da fila de espera
   else if (entry->left_state == ACCIDENT)
-    type = ACCID; // User teve um acidente e tem que sair do parque
+    type = ACCID_WCH; // User teve um acidente e tem que sair do parque
 
   pthread_mutex_lock(&men_queue_mutex);
   // Enviar mensagem para o monitor
@@ -547,7 +547,7 @@ bool women_wc(user_info *info) {
   else if (entry->left_state == QUIT)
     type = DESIS_WCW; // User desistiu da fila de espera
   else if (entry->left_state == ACCIDENT)
-    type = ACCID; // User teve um acidente e tem que sair do parque
+    type = ACCID_WCW; // User teve um acidente e tem que sair do parque
 
   pthread_mutex_lock(&men_queue_mutex);
   // Enviar mensagem para o monitor

@@ -202,7 +202,7 @@ bool tobogan_grande(user_info *info){
   else if (entry->left_state == QUIT)
     type = DESIS_TBG; // User desistiu da fila de espera
   else if (entry->left_state == ACCIDENT)
-    type = ACCID; // User teve um acidente e tem que sair do parque
+    type = ACCID_TBG; // User teve um acidente e tem que sair do parque
 
   // Enviar mensagem para o monitor
   thread_send_message_to_socket(info->socket_monitor, type, buffer);

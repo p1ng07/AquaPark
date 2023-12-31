@@ -179,7 +179,7 @@ bool tobogan_pequeno(user_info *info) {
   else if (entry->left_state == QUIT)
     type = DESIS_TBP; // User desistiu da fila de espera
   else if (entry->left_state == ACCIDENT)
-    type = ACCID; // User teve um acidente e tem que sair do parque
+    type = ACCID_TBP; // User teve um acidente e tem que sair do parque
 
   // Enviar mensagem para o monitor
   thread_send_message_to_socket(info->socket_monitor, type, buffer);

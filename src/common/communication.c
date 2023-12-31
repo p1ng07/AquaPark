@@ -80,12 +80,75 @@ void poll_and_interpret_client_messages(communication_thread_args *args) {
           break;
         }
 
-        case ACCID: {
+        case ACCID_BAR: {
           // User had an accident
           char string[100];
           snprintf(string, 100, "Accident: User %d had an accident.\n",
                    atoi(message));
-          fputs(string, file_eventos);
+          fputs(string, bar_eventos);
+          args->stats->acidentes++;
+          break;
+        }
+        case ACCID_PIS: {
+          // User had an accident
+          char string[100];
+          snprintf(string, 100, "Accident: User %d had an accident.\n",
+                   atoi(message));
+          fputs(string, piscina_eventos);
+          args->stats->acidentes++;
+          break;
+        }
+        case ACCID_PIS_CRIANCAS: {
+          // User had an accident
+          char string[100];
+          snprintf(string, 100, "Accident: User %d had an accident.\n",
+                   atoi(message));
+          fputs(string, piscina_criancas_eventos);
+          args->stats->acidentes++;
+          break;
+        }
+        case ACCID_TBG: {
+          // User had an accident
+          char string[100];
+          snprintf(string, 100, "Accident: User %d had an accident.\n",
+                   atoi(message));
+          fputs(string, tobogan_grande_eventos);
+          args->stats->acidentes++;
+          break;
+        }
+        case ACCID_TBP: {
+          // User had an accident
+          char string[100];
+          snprintf(string, 100, "Accident: User %d had an accident.\n",
+                   atoi(message));
+          fputs(string, tobogan_pequeno_eventos);
+          args->stats->acidentes++;
+          break;
+        }
+        case ACCID_WCD: {
+          // User had an accident
+          char string[100];
+          snprintf(string, 100, "Accident: User %d had an accident.\n",
+                   atoi(message));
+          fputs(string, wc_def_eventos);
+          args->stats->acidentes++;
+          break;
+        }
+        case ACCID_WCW: {
+          // User had an accident
+          char string[100];
+          snprintf(string, 100, "Accident: User %d had an accident.\n",
+                   atoi(message));
+          fputs(string, wc_women_eventos);
+          args->stats->acidentes++;
+          break;
+        }
+        case ACCID_WCH: {
+          // User had an accident
+          char string[100];
+          snprintf(string, 100, "Accident: User %d had an accident.\n",
+                   atoi(message));
+          fputs(string, wc_men_eventos);
           args->stats->acidentes++;
           break;
         }
