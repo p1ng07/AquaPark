@@ -123,14 +123,14 @@ bool is_vip(user_info* info){
   return info->deficient || info->age > 69;
 }
 
-bool should_have_accident(){
+bool inline should_have_accident(){
   srand(time(NULL));
   int random = rand() % 100;
 
   return random < have_accident_parameter;
 }
 
-bool should_quit_attraction(){
+bool inline should_quit_attraction(){
   srand(time(NULL));
 
   return (rand() % 100) < quit_attraction_parameter;
